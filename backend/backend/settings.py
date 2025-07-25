@@ -102,22 +102,35 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+    "default": {
+        "ENGINE": "django.contrib.gis.db.backends.postgis",
+        "NAME": os.getenv("DB_NAME"),
+        "USER": os.getenv("DB_USER"),
+        "PASSWORD": os.getenv("DB_PWD"),
+        "HOST": os.getenv("DB_HOST"),
+        "PORT": os.getenv("DB_PORT"),
     }
 }
 
+
 # DATABASES = {
-#     "default": {
-#         "ENGINE": "django.db.backends.postgresql",
-#         "NAME": os.getenv("DB_NAME"),
-#         "USER": os.getenv("DB_USER"),
-#         "PASSWORD": os.getenv("DB_PWD"),
-#         "HOST": os.getenv("DB_HOST"),
-#         "PORT": os.getenv("DB_PORT"),
-#     }
+#
+#     'default': {
+#             'ENGINE': 'django.contrib.gis.db.backends.postgis',
+#             'NAME': 'agri_analytics',     # same as you created
+#             'USER': 'postgres',           # or your actual pgAdmin username
+#             'PASSWORD': 'admin',  # whatever you set during install
+#             'HOST': 'localhost',
+#             'PORT': '5432',
+#         }
 # }
 
 
@@ -164,3 +177,20 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOWS_CREDENTIALS = True
+
+GDAL_LIBRARY_PATH = r'C:\OSGeo4W\bin\gdal311.dll'
+GEOS_LIBRARY_PATH = r'C:\OSGeo4W\bin\geos_c.dll'
+
+
+# Use WGS84 (SRID 4326) by default for admin map tools
+OSM_GEOSERVER_URL = 'https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}.png'  # Optional, default tiles
+DEFAULT_MAP_CENTER = (40.4093, 49.8671)  # Baku
+DEFAULT_ZOOM = 7
+
+# Important:
+# This makes sure the map and coords match
+from django.contrib.gis import geos
+GEOSGeometry = geos.GEOSGeometry
+
+# Optional for explicitness
+SRID = 4326
