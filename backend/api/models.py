@@ -84,17 +84,32 @@ class CropPivot(geomodels.Model):
 
 
 class CropRotation(models.Model):
-    pivot = models.ForeignKey(CropPivot, on_delete=models.CASCADE, related_name='rotations')
+    pivot = models.ForeignKey(CropPivot, null=True, blank=True, on_delete=models.SET_NULL, related_name="rotations")
+    pivot_name = models.CharField(max_length=50)
+    sector_name = models.CharField(max_length=100)
+    company_name = models.CharField(max_length=100)
+
     year = models.PositiveIntegerField()
     crop = models.CharField(max_length=50, choices=CROP_CHOICES)
     seeding_date = models.DateField(null=True, blank=True)
     harvest_date = models.DateField(null=True, blank=True)
     yield_tons = models.FloatField(null=True, blank=True)
-    notes = models.TextField(blank=True)
+    notes = models.TextField(blank=True, null=True)
 
     class Meta:
-        unique_together = ('pivot', 'year', 'crop')  # prevent duplicate rotations for same crop/year
+        ordering = ['-year']  # Sort by latest year first
+        unique_together = ('pivot', 'year', 'crop')  # Optional, if business logic allows
+
+    def save(self, *args, **kwargs):
+        # If pivot is linked and names are empty, snapshot them
+        if self.pivot:
+            if not self.pivot_name:
+                self.pivot_name = self.pivot.logical_name
+            if not self.sector_name:
+                self.sector_name = self.pivot.sector.name
+            if not self.company_name:
+                self.company_name = self.pivot.sector.region.company.name
+        super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.crop} ({self.year}) – {self.pivot.logical_name}"
-
+        return f"{self.year} – {self.crop} ({self.pivot_name})"

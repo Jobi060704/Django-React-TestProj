@@ -3,8 +3,7 @@ from django.contrib import admin
 from django import forms
 from django.contrib.gis.geos import GEOSGeometry
 
-from .models import Company, Region, WaterwaySector, CropPivot
-
+from .models import *
 # --- Inline for CropPivot inside WaterwaySector ---
 class CropPivotInline(admin.TabularInline):
     model = CropPivot
@@ -154,3 +153,29 @@ class CropPivotAdmin(admin.ModelAdmin):
     search_fields = ['logical_name']
     list_filter = ['sector']
     ordering = ['sector', 'logical_name']
+
+@admin.register(CropRotation)
+class CropRotationAdmin(admin.ModelAdmin):
+    list_display = (
+        'pivot_name', 'sector_name', 'company_name', 'year', 'crop', 'yield_tons'
+    )
+    list_filter = (
+        'year', 'crop', 'company_name'
+    )
+    search_fields = (
+        'pivot_name', 'sector_name', 'company_name', 'notes'
+    )
+    ordering = ('-year', 'company_name')
+    readonly_fields = ('pivot_name', 'sector_name', 'company_name')
+
+    fieldsets = (
+        (None, {
+            'fields': ('pivot', 'pivot_name', 'sector_name', 'company_name')
+        }),
+        ('Crop Info', {
+            'fields': ('year', 'crop', 'seeding_date', 'harvest_date', 'yield_tons')
+        }),
+        ('Additional', {
+            'fields': ('notes',)
+        }),
+    )

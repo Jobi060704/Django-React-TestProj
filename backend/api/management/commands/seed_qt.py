@@ -1,6 +1,6 @@
 import json
 import random
-from datetime import timedelta
+from datetime import timedelta, date
 from math import pi
 from django.core.management.base import BaseCommand
 from django.contrib.gis.geos import Point, Polygon
@@ -824,12 +824,13 @@ def random_color():
 
 
 class Command(BaseCommand):
-    help = "Seed a user, company, region, sectors, and pivots with random colors."
+    help = "Seed a user, company, region, sectors, pivots, and crop rotations with random colors."
 
     def handle(self, *args, **kwargs):
         fake = Faker()
 
         # Clear existing data
+        CropRotation.objects.all().delete()
         CropPivot.objects.all().delete()
         WaterwaySector.objects.all().delete()
         Region.objects.all().delete()
@@ -870,12 +871,13 @@ class Command(BaseCommand):
             sectors.append((sector, count))
 
         # Pivots
-        crop_choices = [c[0] for c in CROP_CHOICES]
+        crop_choices = [c[0] for c in CROP_CHOICES if c[0] != 'none']
         data = json.loads(GEOJSON_DATA)
         coords = [(f['geometry']['coordinates'][0], f['geometry']['coordinates'][1]) for f in data['features']]
 
         pivot_counter = 1
         coord_idx = 0
+        all_pivots = []
 
         for sector, count in sectors:
             for _ in range(count):
@@ -888,12 +890,12 @@ class Command(BaseCommand):
 
                 area_ha = round((pi * radius ** 2) / 10000, 2)
 
-                CropPivot.objects.create(
+                pivot = CropPivot.objects.create(
                     sector=sector,
                     logical_name=f"P{pivot_counter:02d}",
                     area=area_ha,
-                    crop_1=crop_choices[0],
-                    crop_2=crop_choices[1] if len(crop_choices) > 1 else '',
+                    crop_1=random.choice(crop_choices),
+                    crop_2=random.choice(crop_choices) if random.random() > 0.5 else None,
                     crop_3=None,
                     crop_4=None,
                     seeding_date=fake.date_between(start_date='-2y', end_date='today'),
@@ -902,6 +904,32 @@ class Command(BaseCommand):
                     radius_m=radius,
                     color=random_color()  # ✅ Random HEX color for pivot
                 )
+                all_pivots.append(pivot)
                 pivot_counter += 1
 
-        self.stdout.write(self.style.SUCCESS("Seeder completed successfully."))
+        # ----------------------------
+        # Add CropRotation history for each pivot
+        # ----------------------------
+        for pivot in all_pivots:
+            for i in range(2):  # Two years of history
+                year = fake.year()
+                CropRotation.objects.create(
+                    pivot=pivot,
+                    pivot_name=pivot.logical_name,
+                    sector_name=pivot.sector.name,
+                    company_name=pivot.sector.region.company.name,
+                    year=int(year),
+                    crop=random.choice(crop_choices),
+                    seeding_date=fake.date_between(
+                        start_date=date(int(year), 2, 1),
+                        end_date=date(int(year), 4, 1)
+                    ),
+                    harvest_date = fake.date_between(
+                        start_date=date(int(year), 8, 1),
+                        end_date=date(int(year), 11, 1)
+                    ),
+                    yield_tons=round(random.uniform(5.0, 15.0), 2),
+                    notes=fake.sentence()
+                )
+
+        self.stdout.write(self.style.SUCCESS("Seeder completed successfully with CropRotation data."))
