@@ -1,4 +1,5 @@
 import json
+import random
 from datetime import timedelta
 from math import pi
 from django.core.management.base import BaseCommand
@@ -817,8 +818,13 @@ SECTOR_POLYGONS = [
     ]),
 ]
 
+def random_color():
+    """Generate a random HEX color like #AABBCC."""
+    return "#{:06x}".format(random.randint(0, 0xFFFFFF))
+
+
 class Command(BaseCommand):
-    help = "Seed a user, company, region, sectors, and pivots."
+    help = "Seed a user, company, region, sectors, and pivots with random colors."
 
     def handle(self, *args, **kwargs):
         fake = Faker()
@@ -828,13 +834,13 @@ class Command(BaseCommand):
         WaterwaySector.objects.all().delete()
         Region.objects.all().delete()
         Company.objects.all().delete()
-        User.objects.filter(username="testuser").delete()  # Remove old test user if exists
+        User.objects.all().delete()
 
         # ----------------------------
         # Create user
         # ----------------------------
-        username = "vugar"  # You can later replace this with a variable or input
-        password = "123"  # Same here
+        username = "vugar"
+        password = "123"
         user = User.objects.create_user(username=username, password=password)
         self.stdout.write(self.style.SUCCESS(f"User '{username}' created."))
 
@@ -850,7 +856,7 @@ class Command(BaseCommand):
             center=Point(47.5, 39.82, srid=4326)
         )
 
-        # Create sectors
+        # Create sectors with random colors
         sectors = []
         for idx, (name, count) in enumerate(SECTOR_NAMES_SIZES):
             sector = WaterwaySector.objects.create(
@@ -858,7 +864,8 @@ class Command(BaseCommand):
                 name=name,
                 area_ha=count,
                 total_water_requirement=0,
-                shape=SECTOR_POLYGONS[idx]
+                shape=SECTOR_POLYGONS[idx],
+                color=random_color()  # ✅ Random HEX color for sector
             )
             sectors.append((sector, count))
 
@@ -887,12 +894,13 @@ class Command(BaseCommand):
                     area=area_ha,
                     crop_1=crop_choices[0],
                     crop_2=crop_choices[1] if len(crop_choices) > 1 else '',
-                    crop_3='',
-                    crop_4='',
+                    crop_3=None,
+                    crop_4=None,
                     seeding_date=fake.date_between(start_date='-2y', end_date='today'),
                     harvest_date=fake.date_between(start_date='today', end_date='+6m'),
                     center=Point(lon, lat, srid=4326),
-                    radius_m=radius
+                    radius_m=radius,
+                    color=random_color()  # ✅ Random HEX color for pivot
                 )
                 pivot_counter += 1
 

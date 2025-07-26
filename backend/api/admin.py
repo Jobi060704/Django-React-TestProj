@@ -110,7 +110,7 @@ class WaterwaySectorAdminForm(forms.ModelForm):
 @admin.register(WaterwaySector)
 class WaterwaySectorAdmin(admin.ModelAdmin):
     form = WaterwaySectorAdminForm
-    list_display = ['name', 'region', 'area_ha', 'total_water_requirement', 'pivot_count', 'total_pivot_area', 'shape']
+    list_display = ['name', 'region', 'area_ha', 'total_water_requirement', 'pivot_count', 'total_pivot_area', 'shape', 'color']
     search_fields = ['name', 'region__name']
     readonly_fields = ['area_ha']
     list_filter = ['region']
@@ -150,7 +150,7 @@ class CropPivotAdminForm(forms.ModelForm):
 @admin.register(CropPivot)
 class CropPivotAdmin(admin.ModelAdmin):
     form = CropPivotAdminForm
-    list_display = ['logical_name', 'sector', 'area', 'seeding_date', 'harvest_date', 'center', 'radius_m']
+    list_display = ['logical_name', 'sector', 'area', 'seeding_date', 'harvest_date', 'center', 'radius_m', 'color']
     search_fields = ['logical_name']
     list_filter = ['sector']
     ordering = ['sector', 'logical_name']
