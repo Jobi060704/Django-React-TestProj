@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import api from "../api.js";
 import { useNavigate } from "react-router-dom";
+import "../styles/Login.css"
 
 const Login = () => {
     const [username, setUsername] = useState("");
@@ -22,23 +23,41 @@ const Login = () => {
 
     return (
         <div>
-            <h2>Login</h2>
-            {error && <p style={{ color: "red" }}>{error}</p>}
-            <form onSubmit={handleLogin}>
-                <input
-                    type="text"
-                    placeholder="Username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                />
-                <input
-                    type="password"
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                />
-                <button type="submit">Login</button>
+
+            {error && <p style={{color: "red"}}>{error}</p>}
+
+            <form className="form" onSubmit={handleLogin}>
+
+                <div className="form-title">
+                    Login to <span className="brand-name"> SmartCrop.io</span>
+                </div>
+
+                <div className="input-container">
+
+                    <input
+                        type="text"
+                        placeholder="Username"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                    />
+
+                    <input
+                        type="password"
+                        placeholder="Password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                    />
+
+                </div>
+
+                <button className="submit" type="submit">Login</button>
+
+                <p className="signup-link">
+                    No account? <a href="/register">Register</a>
+                </p>
+
             </form>
+
         </div>
     );
 };

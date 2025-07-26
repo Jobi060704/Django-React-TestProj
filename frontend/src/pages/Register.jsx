@@ -7,7 +7,6 @@ const Register = () => {
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [success, setSuccess] = useState("");
     const [error, setError] = useState("");
     const navigate = useNavigate();
 
@@ -16,42 +15,58 @@ const Register = () => {
         api
             .post(`auth/user/register/`, { username, email, password })
             .then(() => {
-                setSuccess("Registration successful! You can now login.");
                 setError("");
                 navigate("/login");
             })
             .catch(() => {
                 setError("Failed to register. Try again.");
-                setSuccess("");
             });
     };
 
     return (
         <div>
-            <h2>Register</h2>
-            {error && <p style={{ color: "red" }}>{error}</p>}
-            {success && <p style={{ color: "green" }}>{success}</p>}
-            <form onSubmit={handleRegister}>
-                <input
-                    type="text"
-                    placeholder="Username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                />
-                <input
-                    type="email"
-                    placeholder="Email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                />
-                <input
-                    type="password"
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                />
-                <button type="submit">Register</button>
+
+            {error && <p style={{color: "red"}}>{error}</p>}
+
+            <form className="form" onSubmit={handleRegister}>
+
+                <div className="form-title">
+                    Register on <span className="brand-name"> SmartCrop.io</span>
+                </div>
+
+                <div className="input-container">
+
+                    <input
+                        type="text"
+                        placeholder="Username"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                    />
+
+                    <input
+                        type="text"
+                        placeholder="Email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                    />
+
+                    <input
+                        type="password"
+                        placeholder="Password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                    />
+
+                </div>
+
+                <button className="submit" type="submit">Register</button>
+
+                <p className="signup-link">
+                    Have an account? <a href="/login">Login</a>
+                </p>
+
             </form>
+
         </div>
     );
 };
