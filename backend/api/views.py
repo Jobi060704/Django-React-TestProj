@@ -71,3 +71,18 @@ class CropPivotDetail(generics.RetrieveUpdateDestroyAPIView):
 
     def get_queryset(self):
         return CropPivot.objects.filter(sector__region__company__owner=self.request.user)
+
+class CropRotationListCreate(generics.ListCreateAPIView):
+    serializer_class = CropRotationSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return CropRotation.objects.filter(pivot__sector__region__company__owner=self.request.user)
+
+
+class CropRotationDetail(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = CropRotationSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return CropRotation.objects.filter(pivot__sector__region__company__owner=self.request.user)

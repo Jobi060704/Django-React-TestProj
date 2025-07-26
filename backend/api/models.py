@@ -81,3 +81,20 @@ class CropPivot(geomodels.Model):
 
     def __str__(self):
         return f"{self.logical_name} – {self.sector.name}"
+
+
+class CropRotation(models.Model):
+    pivot = models.ForeignKey(CropPivot, on_delete=models.CASCADE, related_name='rotations')
+    year = models.PositiveIntegerField()
+    crop = models.CharField(max_length=50, choices=CROP_CHOICES)
+    seeding_date = models.DateField(null=True, blank=True)
+    harvest_date = models.DateField(null=True, blank=True)
+    yield_tons = models.FloatField(null=True, blank=True)
+    notes = models.TextField(blank=True)
+
+    class Meta:
+        unique_together = ('pivot', 'year', 'crop')  # prevent duplicate rotations for same crop/year
+
+    def __str__(self):
+        return f"{self.crop} ({self.year}) – {self.pivot.logical_name}"
+
