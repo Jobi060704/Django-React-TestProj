@@ -8,7 +8,7 @@ function Companies() {
     const [companies, setCompanies] = useState([]);
     const [selectedCompany, setSelectedCompany] = useState(null);
     const mapRef = useRef(null);
-    const markerRef = useRef(null);
+    const markersRef = useRef({});  // Store markers by company ID
 
     // Load and parse companies
     useEffect(() => {
@@ -18,7 +18,7 @@ function Companies() {
                     let lat = null, lng = null;
 
                     if (company.center && company.center.includes("POINT")) {
-                        const wkt = company.center.replace("SRID=4326;", "").trim(); // remove SRID
+                        const wkt = company.center.replace("SRID=4326;", "").trim();
                         const match = wkt.match(/POINT\s*\(([-\d.]+)\s+([-\d.]+)\)/);
                         if (match) {
                             lng = parseFloat(match[1]);
@@ -49,20 +49,35 @@ function Companies() {
         }
     }, []);
 
-    // Update map and marker on selection
+    // Once companies are loaded, add all pins
+    useEffect(() => {
+        if (mapRef.current && companies.length) {
+            companies.forEach((company) => {
+                if (
+                    company.location &&
+                    company.id &&
+                    !markersRef.current[company.id]
+                ) {
+                    const { lat, lng } = company.location;
+                    const marker = L.marker([lat, lng])
+                        .addTo(mapRef.current)
+                        .bindTooltip(company.name, {
+                            permanent: true,
+                            direction: "top",
+                            className: "company-tooltip"
+                        });
+
+                    markersRef.current[company.id] = marker;
+                }
+            });
+        }
+    }, [companies]);
+
+    // Pan to selected company
     useEffect(() => {
         if (selectedCompany?.location && mapRef.current) {
             const { lat, lng } = selectedCompany.location;
-
             mapRef.current.setView([lat, lng], 13);
-
-            if (markerRef.current) {
-                mapRef.current.removeLayer(markerRef.current);
-            }
-
-            const marker = L.marker([lat, lng]).addTo(mapRef.current);
-            marker.bindPopup(selectedCompany.name).openPopup();
-            markerRef.current = marker;
         }
     }, [selectedCompany]);
 

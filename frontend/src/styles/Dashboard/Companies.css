@@ -38,3 +38,12 @@
     height: 100%;
     overflow: hidden;
 }
+
+.leaflet-tooltip.company-tooltip {
+    background-color: rgba(0, 0, 0, 0.75);
+    color: #fff;
+    font-size: 0.75rem;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+}
