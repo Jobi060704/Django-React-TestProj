@@ -5,7 +5,7 @@
 }
 
 .company-table {
-    flex: 0 0 40%;
+    flex: 0 0 30%;
     padding: 1rem;
     overflow-y: auto;
     background-color: #fdfdfd;
@@ -34,7 +34,7 @@
 }
 
 .company-map {
-    flex: 0 0 60%;
+    flex: 0 0 70%;
     height: 100%;
     overflow: hidden;
 }
