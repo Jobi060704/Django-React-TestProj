@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import api from "../api.js";
 import { useNavigate } from "react-router-dom";
-import "../styles/Auth.css"
+import "../styles/Auth.css";
+import Alert from "../components/Alert";
 
 const Login = () => {
     const [username, setUsername] = useState("");
@@ -23,7 +24,7 @@ const Login = () => {
 
     return (
         <div className="auth-page">
-            {error && <p style={{ color: "red" }}>{error}</p>}
+            {error && <Alert message={error} onClose={() => setError("")} />}
 
             <form className="auth-form" onSubmit={handleLogin}>
                 <div className="form-title">

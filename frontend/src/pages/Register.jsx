@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import api from "../api";
+import api from "../api.js";
 import { useNavigate } from "react-router-dom";
 import "../styles/Auth.css"
+import Alert from "../components/Alert";
 
 const Register = () => {
     const [username, setUsername] = useState("");
@@ -32,7 +33,7 @@ const Register = () => {
 
     return (
         <div className="auth-page">
-            {error && <p style={{ color: "red" }}>{error}</p>}
+            {error && <Alert message={error} onClose={() => setError("")} />}
 
             <form className="auth-form" onSubmit={handleRegister}>
                 <div className="form-title">
