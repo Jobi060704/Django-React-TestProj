@@ -2,7 +2,7 @@
 import { Link } from "react-router-dom";
 import { FaChartBar, FaIndustry, FaMapMarkedAlt, FaDrawPolygon, FaTint } from "react-icons/fa";
 import "../styles/Sidebar.css";
-import {FaMapLocation, FaPersonHiking} from "react-icons/fa6";
+import {FaCircleDot, FaCircleH, FaMapLocation, FaPersonHiking} from "react-icons/fa6";
 
 const Sidebar = () => {
     return (
@@ -44,7 +44,7 @@ const Sidebar = () => {
                 </li>
                 <li>
                     <Link to="/pivots">
-                        <FaTint className="sidebar-icon" />
+                        <FaCircleDot className="sidebar-icon" />
                         Pivots
                     </Link>
                 </li>

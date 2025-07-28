@@ -1,23 +1,33 @@
+/* Ensure full-height base layout */
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden; /* Prevent full-page scroll */
+}
+
 div {
     font-family: Arial, sans-serif;
 }
 
+/* Layout */
 .main-layout {
     display: flex;
     flex-direction: column;
     height: 100vh;
+    overflow: hidden;
 }
 
 .main-body {
     display: flex;
-    flex-direction: row;
     flex: 1;
-    /*height: calc(100vh - 60px); !* Account for header height *!*/
+    overflow: hidden;
 }
 
+/* Only this should scroll */
 .main-content {
     flex: 1;
+    overflow-y: auto;
     padding: 2rem;
     background-color: #fff;
-    overflow-y: auto;
 }
