@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import api from "../api.js";
 import { useNavigate } from "react-router-dom";
-import "../styles/Login.css"
+import "../styles/Auth.css"
 
 const Login = () => {
     const [username, setUsername] = useState("");
@@ -22,12 +22,10 @@ const Login = () => {
     };
 
     return (
-        <div>
+        <div className="auth-page">
+            {error && <p style={{ color: "red" }}>{error}</p>}
 
-            {error && <p style={{color: "red"}}>{error}</p>}
-
-            <form className="form" onSubmit={handleLogin}>
-
+            <form className="auth-form" onSubmit={handleLogin}>
                 <div className="form-title">
                     Login to <span className="brand-name"> SmartCrop.io</span>
                 </div>
@@ -60,6 +58,7 @@ const Login = () => {
 
         </div>
     );
+
 };
 
 export default Login;

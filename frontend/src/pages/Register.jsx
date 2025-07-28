@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import api from "../api";
 import { useNavigate } from "react-router-dom";
-
+import "../styles/Auth.css"
 
 const Register = () => {
     const [username, setUsername] = useState("");
@@ -31,12 +31,10 @@ const Register = () => {
     };
 
     return (
-        <div>
+        <div className="auth-page">
+            {error && <p style={{ color: "red" }}>{error}</p>}
 
-            {error && <p style={{color: "red"}}>{error}</p>}
-
-            <form className="form" onSubmit={handleRegister}>
-
+            <form className="auth-form" onSubmit={handleRegister}>
                 <div className="form-title">
                     Register on <span className="brand-name"> SmartCrop.io</span>
                 </div>

@@ -1,0 +1,75 @@
+body {
+    margin: 0; /* Keep margin reset */
+}
+
+.auth-page {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: url('/bg1.jpg') no-repeat center center;
+    background-size: cover;
+}
+
+.auth-form {
+    background-color: #fff;
+    padding: 2rem 1.5rem;
+    max-width: 400px;
+    width: 100%;
+    border-radius: 0.75rem;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+/* Fix title + brand spacing */
+.form-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    font-size: 1.25rem;
+    line-height: 1.5rem;
+    font-weight: 600;
+    color: #000;
+    padding-top: 0.5rem;  /* Added */
+    padding-bottom: 0.5rem; /* Added */
+}
+
+.brand-name {
+    font-size: 2.3rem;
+    font-weight: 700;
+    background: linear-gradient(to right, lime, darkgreen);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 2.6rem; /* Prevent cutting */
+    display: inline-block;
+}
+
+/* Input + Button styling remains same */
+.input-container input, .auth-form button {
+    outline: none;
+    border: 1px solid #e5e7eb;
+    margin: 8px 0;
+}
+
+.input-container input {
+    background-color: #fff;
+    padding: 1rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.submit {
+    display: block;
+    padding: 0.75rem 1.25rem;
+    background-color: #4F46E5;
+    color: #fff;
+    font-size: 0.875rem;
+    font-weight: 500;
+    width: 100%;
+    border-radius: 0.5rem;
+    text-transform: uppercase;
+}
