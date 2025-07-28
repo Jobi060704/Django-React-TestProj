@@ -17,6 +17,7 @@ CROP_CHOICES = [
 class Company(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='owned_companies')
     name = models.CharField(max_length=100, unique=True)  # Required (so remove null/blank)
+    center = geomodels.PointField(srid=4326, geography=True, null=True, blank=True)  # Optional
 
     def __str__(self):
         return self.name

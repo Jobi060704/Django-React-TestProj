@@ -1,12 +1,11 @@
-/* src/styles/Companies.css */
-
 .company-container {
     display: flex;
-    height: calc(100vh - 60px); /* Adjusted for header */
+    height: 100%; /* Now takes the full height of .main-content */
+    overflow: hidden;
 }
 
 .company-table {
-    width: 40%;
+    flex: 0 0 40%;
     padding: 1rem;
     overflow-y: auto;
     background-color: #fdfdfd;
@@ -16,19 +15,26 @@
 .company-table table {
     width: 100%;
     border-collapse: collapse;
+    table-layout: fixed;
 }
 
-.company-table th, .company-table td {
+.company-table th,
+.company-table td {
     border: 1px solid #ccc;
     padding: 8px;
     text-align: left;
+    word-wrap: break-word;
 }
 
 .company-table th {
     background-color: #f0f0f0;
+    position: sticky;
+    top: 0;
+    z-index: 1;
 }
 
 .company-map {
-    width: 60%;
+    flex: 0 0 60%;
     height: 100%;
+    overflow: hidden;
 }

@@ -4,6 +4,37 @@ from django import forms
 from django.contrib.gis.geos import GEOSGeometry
 
 from .models import *
+
+class CompanyAdminForm(forms.ModelForm):
+    center = forms.CharField(widget=forms.Textarea, required=False, label='Center (WKT)')
+
+    class Meta:
+        model = Company
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.center:
+            self.fields['center'].initial = self.instance.center.wkt
+
+    def clean_center(self):
+        data = self.cleaned_data.get('center')
+        if data:
+            try:
+                geom = GEOSGeometry(data)
+            except Exception as e:
+                raise forms.ValidationError(f"Invalid geometry WKT: {e}")
+            return geom
+        return None
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        if commit:
+            instance.save()
+        return instance
+
+
+
 # --- Inline for CropPivot inside WaterwaySector ---
 class CropPivotInline(admin.TabularInline):
     model = CropPivot
@@ -34,10 +65,9 @@ class RegionInline(admin.TabularInline):
 
 # --- CompanyAdmin with Region inline ---
 @admin.register(Company)
-class CompanyAdmin(admin.ModelAdmin):
-    list_display = ['name', 'owner']
-    search_fields = ['name']
-    inlines = [RegionInline]
+class CompanyAdmin(admin.ModelAdmin):  # ✅ use plain ModelAdmin, not GeoModelAdmin
+    form = CompanyAdminForm
+    list_display = ['name', 'owner', 'center']
 
 # --- RegionAdmin with WaterwaySector inline ---
 class RegionAdminForm(forms.ModelForm):

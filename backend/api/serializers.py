@@ -36,7 +36,7 @@ class CompanySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Company
-        fields = ["id", "name", "owner"]
+        fields = ["id", "name", "owner", "center"]
 
 class RegionSerializer(serializers.ModelSerializer):
     company = serializers.ReadOnlyField(source='company.name')
