@@ -2,6 +2,10 @@ from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from .models import Company, Region, WaterwaySector, CropPivot
 from .serializers import *
+from rest_framework_simplejwt.views import TokenObtainPairView
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
 
 class CreateUserView(generics.CreateAPIView):
     queryset = User.objects.all()

@@ -1,0 +1,8 @@
+.main-body {
+    display: flex;
+}
+
+.content-area {
+    flex: 1;
+    padding: 1rem;
+}

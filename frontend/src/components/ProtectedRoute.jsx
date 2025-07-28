@@ -43,6 +43,10 @@ function ProtectedRoute({ children }) {
         if (tokenExpiration < now) {
             await refreshToken();
         } else {
+            const username = decoded.username || decoded.user || null;
+            if (username) {
+                localStorage.setItem("username", username);
+            }
             setIsAuthorized(true);
         }
     };
