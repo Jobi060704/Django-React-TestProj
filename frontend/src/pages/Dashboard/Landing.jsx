@@ -2,9 +2,9 @@
 // import api from "../api";
 // import Note from "../components/Note";
 
-import "../styles/Dashboard_main.css"
+import "../../styles/Dashboard_main.css"
 
-function Dashboard_Landing() {
+function Landing() {
     return (
         <div className="dashboard-landing">
             <h1>Welcome to SmartCrop.io!</h1>
@@ -20,4 +20,4 @@ function Dashboard_Landing() {
     );
 }
 
-export default Dashboard_Landing;
+export default Landing;

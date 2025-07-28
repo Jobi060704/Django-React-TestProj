@@ -1,8 +1,8 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import Dashboard_Landing from "./pages/Dashboard_Landing.jsx";
+import Login from "./pages/Auth/Login.jsx";
+import Register from "./pages/Auth/Register.jsx";
+import Landing from "./pages/Dashboard/Landing.jsx";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import MainLayout from "./components/MainLayout"; // ✅ Import layout wrapper
@@ -22,7 +22,7 @@ function App() {
         <BrowserRouter>
             <Routes>
                 <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                <Route path="/dashboard" element={<ProtectedRoute> <MainLayout> <Dashboard_Landing /> </MainLayout> </ProtectedRoute>} />
+                <Route path="/dashboard" element={<ProtectedRoute> <MainLayout> <Landing /> </MainLayout> </ProtectedRoute>} />
 
                 <Route path="/login" element={<Login />} />
                 <Route path="/logout" element={<Logout />} />

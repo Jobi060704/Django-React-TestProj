@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import api from "../api.js";
+import api from "../../api.js";
 import { useNavigate } from "react-router-dom";
-import "../styles/Auth.css";
-import Alert from "../components/Alert";
+import "../../styles/Auth.css";
+import Alert from "../../components/Alert.jsx";
 
 const Login = () => {
     const [username, setUsername] = useState("");
@@ -55,7 +55,7 @@ const Login = () => {
                 <button className="submit" type="submit">Login</button>
 
                 <p className="signup-link">
-                    No account? <a href="/register">Register</a>
+                    No account? <a href="/Register">Register</a>
                 </p>
 
             </form>

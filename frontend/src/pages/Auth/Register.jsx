@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import api from "../api.js";
+import api from "../../api.js";
 import { useNavigate } from "react-router-dom";
-import "../styles/Auth.css"
-import Alert from "../components/Alert";
+import "../../styles/Auth.css"
+import Alert from "../../components/Alert.jsx";
 
 const Register = () => {
     const [username, setUsername] = useState("");
@@ -81,7 +81,7 @@ const Register = () => {
                 <button className="submit" type="submit">Register</button>
 
                 <p className="signup-link">
-                    Have an account? <a href="/login">Login</a>
+                    Have an account? <a href="/Login">Login</a>
                 </p>
 
             </form>
