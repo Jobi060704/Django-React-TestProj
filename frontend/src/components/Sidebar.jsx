@@ -25,7 +25,7 @@ const Sidebar = () => {
 
             <ul> {/*Models*/}
                 <li>
-                    <Link to="/companies">
+                    <Link to="/dashboard/companies">
                         <FaIndustry className="sidebar-icon" />
                         Companies
                     </Link>
