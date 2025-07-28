@@ -1,14 +1,14 @@
 .sidebar {
     width: 220px;
     background-color: #f4f4f4;
-    height: calc(100vh - 60px); /* Header height subtracted */
-    padding-top: 1rem;
-    box-shadow: 1px 0 4px rgba(0,0,0,0.1);
+    height: calc(100vh - 60px);
 }
 
 .sidebar ul {
     list-style: none;
     padding-left: 0;
+    padding-bottom: 5px;
+    margin: 0;
 }
 
 .sidebar li {
@@ -16,9 +16,22 @@
 }
 
 .sidebar a {
+    display: flex;
+    align-items: center;
     text-decoration: none;
     color: #333;
-    padding-left: 1rem;
-    display: block;
-    font-weight: 500;
+    font-size: 1rem;
+    font-weight: bold;
+    padding: 0.5rem 1rem;
+    transition: background 0.2s ease;
+}
+
+.sidebar a:hover {
+    background-color: #e0e0e0;
+    border-radius: 4px;
+}
+
+.sidebar-icon {
+    margin-right: 0.75rem;
+    font-size: 1.2rem;
 }

@@ -1,15 +1,64 @@
 // src/components/Sidebar.jsx
 import { Link } from "react-router-dom";
+import { FaChartBar, FaIndustry, FaMapMarkedAlt, FaDrawPolygon, FaTint } from "react-icons/fa";
 import "../styles/Sidebar.css";
+import {FaMapLocation, FaPersonHiking} from "react-icons/fa6";
 
 const Sidebar = () => {
     return (
         <aside className="sidebar">
-            <ul>
-                <li><Link to="/dashboard">Dashboard</Link></li>
-                <li><Link to="/pivots">Pivots</Link></li>
-                <li><Link to="/sectors">Sectors</Link></li>
+
+            <ul> {/*Dashboard and Map*/}
+                <li>
+                    <Link to="/dashboard">
+                        <FaChartBar className="sidebar-icon" />
+                        Dashboard
+                    </Link>
+                </li>
+                <li>
+                    <Link to="/map">
+                        <FaMapLocation className="sidebar-icon" />
+                        Map view
+                    </Link>
+                </li>
             </ul>
+
+            <ul> {/*Models*/}
+                <li>
+                    <Link to="/companies">
+                        <FaIndustry className="sidebar-icon" />
+                        Companies
+                    </Link>
+                </li>
+                <li>
+                    <Link to="/regions">
+                        <FaMapMarkedAlt className="sidebar-icon" />
+                        Regions
+                    </Link>
+                </li>
+                <li>
+                    <Link to="/sectors">
+                        <FaDrawPolygon className="sidebar-icon" />
+                        Sectors
+                    </Link>
+                </li>
+                <li>
+                    <Link to="/pivots">
+                        <FaTint className="sidebar-icon" />
+                        Pivots
+                    </Link>
+                </li>
+            </ul>
+
+            <ul> {/*Extras*/}
+                <li>
+                    <Link to="/scouting">
+                        <FaPersonHiking className="sidebar-icon" />
+                        Scouting
+                    </Link>
+                </li>
+            </ul>
+
         </aside>
     );
 };
