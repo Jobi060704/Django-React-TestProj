@@ -1,6 +1,4 @@
-// src/components/Header.jsx
 import { Link } from "react-router-dom";
-import logo from "../assets/logo1bgless.png"; // Place your logo here
 import "../styles/Header.css";
 
 const Header = ({ user }) => {
@@ -9,7 +7,9 @@ const Header = ({ user }) => {
     return (
         <header className="app-header">
             <div className="logo-section">
-                <img src={logo} alt="SmartCrop Logo" className="logo-img" />
+                <Link to="/">
+                    <img src="/logo1bgless.png" alt="SmartCrop Logo" className="logo-img" />
+                </Link>
             </div>
 
             <nav className="nav-links">
