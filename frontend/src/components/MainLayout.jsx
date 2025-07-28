@@ -3,16 +3,20 @@ import React from "react"
 import Header from "./Header"
 import Sidebar from "./Sidebar"
 
+import "../styles/MainLayout.css"
+
 const MainLayout = ({ children }) => {
     return (
         <div className="main-layout">
             <Header />
-            <div className="content-area">
+            <div className="main-body">
                 <Sidebar />
-                <main className="main-content">{children}</main>
+                <div className="main-content">
+                    {children}
+                </div>
             </div>
         </div>
-    )
-}
+    );
+};
 
 export default MainLayout;

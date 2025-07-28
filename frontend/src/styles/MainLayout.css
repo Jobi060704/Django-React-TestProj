@@ -1,8 +1,19 @@
-.main-body {
+.main-layout {
     display: flex;
+    flex-direction: column;
+    height: 100vh;
 }
 
-.content-area {
+.main-body {
+    display: flex;
+    flex-direction: row;
     flex: 1;
-    padding: 1rem;
+    /*height: calc(100vh - 60px); !* Account for header height *!*/
+}
+
+.main-content {
+    flex: 1;
+    padding: 2rem;
+    background-color: #fff;
+    overflow-y: auto;
 }
