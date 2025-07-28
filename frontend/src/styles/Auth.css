@@ -25,26 +25,30 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
+    gap: 0.75rem;
     margin-bottom: 1.5rem;
     text-align: center;
-    font-size: 1.25rem;
-    line-height: 1.5rem;
-    font-weight: 600;
-    color: #000;
-    padding-top: 0.5rem;  /* Added */
-    padding-bottom: 0.5rem; /* Added */
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+}
+
+.logo {
+    width: 50px;
+    height: 50px;
 }
 
 .brand-name {
-    font-size: 2.3rem;
-    font-weight: 700;
-    background: linear-gradient(to right, lime, darkgreen);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    line-height: 2.6rem; /* Prevent cutting */
-    display: inline-block;
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
 }
+
+.brand-line1 {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: darkgreen;
+}
+
 
 /* Input + Button styling remains same */
 .input-container input, .auth-form button {

@@ -37,7 +37,10 @@ const Register = () => {
 
             <form className="auth-form" onSubmit={handleRegister}>
                 <div className="form-title">
-                    Register on <span className="brand-name"> SmartCrop.io</span>
+                    <img src="/logo1.png" alt="Logo" className="logo" />
+                    <div className="brand-name">
+                        <span className="brand-line1">Register</span>
+                    </div>
                 </div>
 
                 <div className="input-container">

@@ -28,7 +28,10 @@ const Login = () => {
 
             <form className="auth-form" onSubmit={handleLogin}>
                 <div className="form-title">
-                    Login to <span className="brand-name"> SmartCrop.io</span>
+                    <img src="/logo1.png" alt="Logo" className="logo" />
+                    <div className="brand-name">
+                        <span className="brand-line1">Login</span>
+                    </div>
                 </div>
 
                 <div className="input-container">
