@@ -57,6 +57,12 @@ body {
     margin: 8px 0;
 }
 
+.input-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
 .input-container input {
     background-color: #fff;
     padding: 1rem;
@@ -64,6 +70,9 @@ body {
     line-height: 1.25rem;
     border-radius: 0.5rem;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e5e7eb;
+    width: 100%; /* ✅ ensure full width inside container */
+    box-sizing: border-box; /* ✅ prevents overflow from padding */
 }
 
 .submit {

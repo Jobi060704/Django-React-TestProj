@@ -1,6 +1,6 @@
 // src/components/Header.jsx
 import { Link } from "react-router-dom";
-import logo from "../assets/logo1.png"; // Place your logo here
+import logo from "../assets/logo1bgless.png"; // Place your logo here
 import "../styles/Header.css";
 
 const Header = ({ user }) => {
