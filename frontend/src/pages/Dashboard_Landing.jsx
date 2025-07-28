@@ -2,13 +2,13 @@
 // import api from "../api";
 // import Note from "../components/Note";
 
-import "../styles/Home.css"
+import "../styles/Dashboard_main.css"
 
-function Home() {
+function Dashboard_Landing() {
 
     return (
         <p>azzzzzz</p>
     );
 }
 
-export default Home;
+export default Dashboard_Landing;

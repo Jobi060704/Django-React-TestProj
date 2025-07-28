@@ -17,7 +17,7 @@ const Login = () => {
             .then((res) => {
                 localStorage.setItem("access", res.data.access);
                 localStorage.setItem("refresh", res.data.refresh);
-                navigate("/");
+                navigate("/dashboard");
             })
             .catch(() => setError("Invalid username or password"));
     };
