@@ -1,4 +1,3 @@
-// src/pages/Dashboard/Companies.jsx
 import { useEffect, useState, useRef } from "react";
 import api from "../../api";
 import "leaflet/dist/leaflet.css";
@@ -9,25 +8,36 @@ function Companies() {
     const [companies, setCompanies] = useState([]);
     const [selectedCompany, setSelectedCompany] = useState(null);
     const mapRef = useRef(null);
+    const markerRef = useRef(null);
 
-    // Load companies
+    // Load and parse companies
     useEffect(() => {
         api.get("/api/companies/")
             .then((res) => {
-                // Dummy coordinates added
-                const withCoords = res.data.map((company, index) => ({
-                    ...company,
-                    location: {
-                        lat: 40.4 + index * 0.1,
-                        lng: 49.8 + index * 0.1
+                const parsedCompanies = res.data.map((company) => {
+                    let lat = null, lng = null;
+
+                    if (company.center && company.center.includes("POINT")) {
+                        const wkt = company.center.replace("SRID=4326;", "").trim(); // remove SRID
+                        const match = wkt.match(/POINT\s*\(([-\d.]+)\s+([-\d.]+)\)/);
+                        if (match) {
+                            lng = parseFloat(match[1]);
+                            lat = parseFloat(match[2]);
+                        }
                     }
-                }));
-                setCompanies(withCoords);
+
+                    return {
+                        ...company,
+                        location: lat && lng ? { lat, lng } : null
+                    };
+                });
+
+                setCompanies(parsedCompanies);
             })
             .catch((err) => console.error("Failed to load companies", err));
     }, []);
 
-    // Initialize map
+    // Initialize map once
     useEffect(() => {
         if (!mapRef.current) {
             mapRef.current = L.map("company-map").setView([40.4, 49.8], 7);
@@ -39,11 +49,20 @@ function Companies() {
         }
     }, []);
 
-    // Move map when company is selected
+    // Update map and marker on selection
     useEffect(() => {
-        if (selectedCompany && mapRef.current) {
+        if (selectedCompany?.location && mapRef.current) {
             const { lat, lng } = selectedCompany.location;
-            mapRef.current.setView([lat, lng], 12);
+
+            mapRef.current.setView([lat, lng], 13);
+
+            if (markerRef.current) {
+                mapRef.current.removeLayer(markerRef.current);
+            }
+
+            const marker = L.marker([lat, lng]).addTo(mapRef.current);
+            marker.bindPopup(selectedCompany.name).openPopup();
+            markerRef.current = marker;
         }
     }, [selectedCompany]);
 
