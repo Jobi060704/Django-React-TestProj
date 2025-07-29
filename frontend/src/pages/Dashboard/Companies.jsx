@@ -5,6 +5,7 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import "../../styles/Dashboard/Companies.css";
 import {FaEdit, FaTrash} from "react-icons/fa";
+import WarningBox from "../../components/WarningBox.jsx";
 
 function Companies() {
     const [companies, setCompanies] = useState([]);
@@ -14,6 +15,26 @@ function Companies() {
     const [sortKey, setSortKey] = useState("name");
     const [sortOrder, setSortOrder] = useState("asc");
     const [searchQuery, setSearchQuery] = useState("");
+    const [companyToDelete, setCompanyToDelete] = useState(null);
+
+    const handleDeleteRequest = (e, company) => {
+        e.stopPropagation();
+        setCompanyToDelete(company);
+    };
+
+    const confirmDelete = () => {
+        api.delete(`/api/companies/${companyToDelete.id}/`)
+            .then(() => {
+                setCompanies((prev) => prev.filter(c => c.id !== companyToDelete.id));
+                setCompanyToDelete(null);
+            })
+            .catch((err) => {
+                console.error("Failed to delete company", err);
+                alert("Failed to delete company.");
+                setCompanyToDelete(null);
+            });
+    };
+
 
     const filteredCompanies = companies.filter((company) =>
         company.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -101,87 +122,97 @@ function Companies() {
     };
 
     return (
-        <div className="company-container">
-            <div className="company-list">
-                <div className="company-header">
-                    <div className="company-header-top">
-                        <h2>Companies</h2>
+        <>
+            {companyToDelete && (
+                <WarningBox
+                    message={`Are you sure you want to delete "${companyToDelete.name}"?`}
+                    onConfirm={confirmDelete}
+                    onCancel={() => setCompanyToDelete(null)}
+                />
+            )}
 
-                        <div className="sort-controls">
-                            <label htmlFor="sort-select">Sort:</label>
-                            <select
-                                id="sort-select"
-                                value={sortKey}
-                                onChange={(e) => setSortKey(e.target.value)}
-                            >
-                                <option value="name">Name</option>
-                                <option value="owner">Owner</option>
-                            </select>
-                            <button
-                                className="sort-arrow"
-                                onClick={() =>
-                                    setSortOrder(sortOrder === "asc" ? "desc" : "asc")
-                                }
-                            >
-                                {sortOrder === "asc" ? "↑" : "↓"}
-                            </button>
-                        </div>
-                    </div>
+            <div className="company-container">
+                <div className="company-list">
+                    <div className="company-header">
+                        <div className="company-header-top">
+                            <h2>Companies</h2>
 
-                    <div className="search-bar">
-                        <div className="search-input-wrapper">
-                            <input
-                                type="text"
-                                placeholder="Search by company name..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                            />
-                            {searchQuery && (
-                                <button className="clear-search" onClick={() => setSearchQuery("")}>
-                                    ✕
+                            <div className="sort-controls">
+                                <label htmlFor="sort-select">Sort:</label>
+                                <select
+                                    id="sort-select"
+                                    value={sortKey}
+                                    onChange={(e) => setSortKey(e.target.value)}
+                                >
+                                    <option value="name">Name</option>
+                                    <option value="owner">Owner</option>
+                                </select>
+                                <button
+                                    className="sort-arrow"
+                                    onClick={() =>
+                                        setSortOrder(sortOrder === "asc" ? "desc" : "asc")
+                                    }
+                                >
+                                    {sortOrder === "asc" ? "↑" : "↓"}
                                 </button>
-                            )}
-                        </div>
-                        <Link to="/dashboard/companies/add" className="add-company-button">
-                            + Add
-                        </Link>
-                    </div>
-
-
-                </div>
-
-                <div className="company-list-content">
-                    <div className="company-boxes">
-                        {sortedCompanies.map((company) => (
-                            <div
-                                key={company.id}
-                                className="company-box"
-                                onClick={() => handleCompanyClick(company)}
-                            >
-                                <div className="company-box-top">
-                                    <h3>{company.name}</h3>
-                                    <div className="company-actions">
-                                        <Link to={`/dashboard/companies/${company.id}/edit`}>
-                                            <FaEdit className="action-icon edit" />
-                                        </Link>
-                                        <button className="action-icon delete" onClick={(e) => {
-                                            e.stopPropagation(); // Prevent triggering map focus
-                                            // TODO: add delete logic later
-                                        }}>
-                                            <FaTrash />
-                                        </button>
-                                    </div>
-                                </div>
-                                <p>Owner: {company.owner}</p>
                             </div>
-                        ))}
+                        </div>
+
+                        <div className="search-bar">
+                            <div className="search-input-wrapper">
+                                <input
+                                    type="text"
+                                    placeholder="Search by company name..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                />
+                                {searchQuery && (
+                                    <button className="clear-search" onClick={() => setSearchQuery("")}>
+                                        ✕
+                                    </button>
+                                )}
+                            </div>
+                            <Link to="/dashboard/companies/add" className="add-company-button">
+                                + Add
+                            </Link>
+                        </div>
+
+
                     </div>
 
-                </div>
-            </div>
+                    <div className="company-list-content">
+                        <div className="company-boxes">
+                            {sortedCompanies.map((company) => (
+                                <div
+                                    key={company.id}
+                                    className="company-box"
+                                    onClick={() => handleCompanyClick(company)}
+                                >
+                                    <div className="company-box-top">
+                                        <h3>{company.name}</h3>
+                                        <div className="company-actions">
+                                            <Link to={`/dashboard/companies/${company.id}/edit`}>
+                                                <FaEdit className="action-icon edit" />
+                                            </Link>
+                                            <button className="action-icon delete"
+                                                    onClick={(e) => handleDeleteRequest(e, company)}
+                                            >
+                                                <FaTrash />
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <p>Owner: {company.owner}</p>
+                                </div>
+                            ))}
+                        </div>
 
-            <div className="company-map" id="company-map"></div>
-        </div>
+                    </div>
+                </div>
+
+                <div className="company-map" id="company-map"></div>
+            </div>
+        </>
+
     );
 
 }
