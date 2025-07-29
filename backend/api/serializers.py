@@ -78,6 +78,22 @@ class CropPivotSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["area"]
 
+class CropFieldSerializer(serializers.ModelSerializer):
+    sector = serializers.ReadOnlyField(source='sector.name')
+    sector_id = serializers.PrimaryKeyRelatedField(
+        queryset=WaterwaySector.objects.all(), source='sector', write_only=True
+    )
+
+    class Meta:
+        model = CropField
+        fields = [
+            "id", "logical_name", "area", "crop_1", "crop_2", "crop_3", "crop_4",
+            "seeding_date", "harvest_date", "center", "sector", "sector_id"
+        ]
+        read_only_fields = ["area"]
+
+
+
 class CropRotationSerializer(serializers.ModelSerializer):
     pivot = serializers.ReadOnlyField(source='pivot.logical_name')
     pivot_id = serializers.PrimaryKeyRelatedField(

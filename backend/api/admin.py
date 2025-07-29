@@ -184,6 +184,48 @@ class CropPivotAdmin(admin.ModelAdmin):
     list_filter = ['sector']
     ordering = ['sector', 'logical_name']
 
+
+
+class CropFieldAdminForm(forms.ModelForm):
+    center = forms.CharField(widget=forms.Textarea, required=False, label='Center (WKT)')
+    area = forms.FloatField(disabled=True, required=False)
+    shape = forms.CharField(widget=forms.Textarea, required=False, label='Shape (WKT)')
+
+    class Meta:
+        model = CropField
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.center:
+            self.fields['center'].initial = self.instance.center.wkt
+
+    def clean_center(self):
+        data = self.cleaned_data.get('center')
+        if data:
+            try:
+                geom = GEOSGeometry(data)
+            except Exception as e:
+                raise forms.ValidationError(f"Invalid geometry WKT: {e}")
+            return geom
+        return None
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        if commit:
+            instance.save()
+        return instance
+
+@admin.register(CropField)
+class CropFieldAdmin(admin.ModelAdmin):
+    form = CropFieldAdminForm
+    list_display = ['logical_name', 'sector', 'area', 'seeding_date', 'harvest_date', 'center', 'color', 'shape']
+    search_fields = ['logical_name']
+    list_filter = ['sector']
+    ordering = ['sector', 'logical_name']
+
+
+
 @admin.register(CropRotation)
 class CropRotationAdmin(admin.ModelAdmin):
     list_display = (

@@ -84,6 +84,36 @@ class CropPivot(geomodels.Model):
         return f"{self.logical_name} – {self.sector.name}"
 
 
+class CropField(geomodels.Model):
+    sector = models.ForeignKey(WaterwaySector, on_delete=models.CASCADE, related_name='fields')
+    logical_name = models.CharField(max_length=10)  # Required (short name like F01)
+    area = models.FloatField()  # Auto-calculated
+    crop_1 = models.CharField(max_length=50, choices=CROP_CHOICES, blank=True, null=True)
+    crop_2 = models.CharField(max_length=50, choices=CROP_CHOICES, blank=True, null=True)
+    crop_3 = models.CharField(max_length=50, choices=CROP_CHOICES, blank=True, null=True)
+    crop_4 = models.CharField(max_length=50, choices=CROP_CHOICES, blank=True, null=True)
+    seeding_date = models.DateField(null=True, blank=True)
+    harvest_date = models.DateField(null=True, blank=True)
+    center = geomodels.PointField(srid=4326, geography=True, null=True, blank=True)
+    shape = geomodels.PolygonField(srid=4326, geography=True, null=True, blank=True)  # Optional
+    color = models.CharField(max_length=7, default="#000080")  # Default blue for fields
+
+    def save(self, *args, **kwargs):
+
+        if self.shape:
+            try:
+                deg_area = self.shape.area
+                self.area = deg_area * 979000  # Convert degree² → ha (approx)
+            except Exception as e:
+                print(f"Failed to calculate area: {e}")
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.logical_name} – {self.sector.name}"
+
+
+
+
 class CropRotation(models.Model):
     pivot = models.ForeignKey(CropPivot, null=True, blank=True, on_delete=models.SET_NULL, related_name="rotations")
     pivot_name = models.CharField(max_length=50)

@@ -18,6 +18,10 @@ urlpatterns = [
     path("pivots/", views.CropPivotListCreate.as_view(), name="pivot-list"),
     path("pivots/<int:pk>/", views.CropPivotDetail.as_view(), name="pivot-detail"),
 
+    # Crop Fields
+    path("fields/", views.CropFieldListCreate.as_view(), name="field-list"),
+    path("fields/<int:pk>/", views.CropFieldDetail.as_view(), name="field-detail"),
+
     # Crop Rotations
     path('rotations/', views.CropRotationListCreate.as_view(), name='rotation-list'),
     path('rotations/<int:pk>/', views.CropRotationDetail.as_view(), name='rotation-detail'),
