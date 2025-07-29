@@ -4,6 +4,7 @@ import api from "../../api";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import "../../styles/Dashboard/Companies.css";
+import {FaEdit, FaTrash} from "react-icons/fa";
 
 function Companies() {
     const [companies, setCompanies] = useState([]);
@@ -134,7 +135,13 @@ function Companies() {
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
+                        {searchQuery && (
+                            <button className="clear-search" onClick={() => setSearchQuery("")}>
+                                ✕
+                            </button>
+                        )}
                     </div>
+
                 </div>
 
                 <div className="company-list-content">
@@ -145,7 +152,20 @@ function Companies() {
                                 className="company-box"
                                 onClick={() => handleCompanyClick(company)}
                             >
-                                <h3>{company.name}</h3>
+                                <div className="company-box-top">
+                                    <h3>{company.name}</h3>
+                                    <div className="company-actions">
+                                        <Link to={`/dashboard/companies/${company.id}/edit`}>
+                                            <FaEdit className="action-icon edit" />
+                                        </Link>
+                                        <button className="action-icon delete" onClick={(e) => {
+                                            e.stopPropagation(); // Prevent triggering map focus
+                                            // TODO: add delete logic later
+                                        }}>
+                                            <FaTrash />
+                                        </button>
+                                    </div>
+                                </div>
                                 <p>Owner: {company.owner}</p>
                             </div>
                         ))}

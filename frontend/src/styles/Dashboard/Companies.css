@@ -109,12 +109,13 @@
 }
 
 .search-bar {
+    position: relative;
     margin-bottom: 1rem;
 }
 
 .search-bar input {
     width: 80%;
-    padding: 0.5rem;
+    padding: 0.5rem 2rem 0.5rem 0.5rem;
     border: 1px solid #ccc;
     border-radius: 6px;
     font-size: 0.95rem;
@@ -144,4 +145,57 @@
 
 .add-company-button:hover {
     background-color: #218838;
+}
+
+
+
+.clear-search {
+    position: absolute;
+    right: 20%;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    font-size: 1.1rem;
+    cursor: pointer;
+    color: #888;
+}
+
+.clear-search:hover {
+    color: #000;
+}
+
+.company-box-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.company-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.action-icon {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    color: #666;
+    padding: 6px;
+    border-radius: 50%; /* make it round */
+    transition: background-color 0.2s ease;
+}
+
+.action-icon:hover {
+    background-color: #e0e0e0; /* light gray circle */
+    color: #000;
+}
+
+.action-icon.edit {
+    color: #007bff;
+}
+
+.action-icon.delete {
+    color: #dc3545;
 }
