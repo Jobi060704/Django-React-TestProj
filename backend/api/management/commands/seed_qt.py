@@ -848,7 +848,7 @@ class Command(BaseCommand):
         # ----------------------------
         # Create company owned by user
         # ----------------------------
-        company = Company.objects.create(name="Karabakh Crops LLC", owner=user)
+        company = Company.objects.create(name="Karabakh Crops LLC", owner=user, center=Point(46.5, 39.82, srid=4326))
 
         # Create region
         region = Region.objects.create(
