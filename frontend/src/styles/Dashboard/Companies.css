@@ -164,6 +164,7 @@
     font-size: 1rem;
     color: #666;
     cursor: pointer;
+    padding-right: 1rem;
 }
 
 .clear-search:hover {
