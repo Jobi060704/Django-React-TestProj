@@ -73,14 +73,6 @@ function Companies() {
         }
     }, [companies]);
 
-    // Pan to selected company
-    // useEffect(() => {
-    //     if (selectedCompany?.location && mapRef.current) {
-    //         const { lat, lng } = selectedCompany.location;
-    //         mapRef.current.setView([lat, lng], 13);
-    //     }
-    // }, [selectedCompany]);
-
     return (
         <div className="company-container">
             <div className="company-table">
