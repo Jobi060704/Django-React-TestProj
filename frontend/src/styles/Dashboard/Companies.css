@@ -4,37 +4,51 @@
     overflow: hidden;
 }
 
-.company-table {
-    flex: 0 0 30%;
+.company-list {
+    flex: 20%;
     padding: 1rem;
     overflow-y: auto;
     background-color: #fdfdfd;
     border-right: 1px solid #ddd;
 }
 
-.company-table table {
-    width: 100%;
-    border-collapse: collapse;
-    table-layout: fixed;
+.company-list h2 {
+    margin-bottom: 1rem;
 }
 
-.company-table th,
-.company-table td {
+.company-boxes {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.company-box {
+    background-color: #fff;
     border: 1px solid #ccc;
-    padding: 8px;
-    text-align: left;
-    word-wrap: break-word;
+    border-radius: 8px;
+    padding: 1rem;
+    cursor: pointer;
+    transition: box-shadow 0.2s ease;
 }
 
-.company-table th {
-    background-color: #f0f0f0;
-    position: sticky;
-    top: 0;
-    z-index: 1;
+.company-box:hover {
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+    background-color: #f9f9f9;
+}
+
+.company-box h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1.1rem;
+}
+
+.company-box p {
+    margin: 0;
+    color: #666;
+    font-size: 0.9rem;
 }
 
 .company-map {
-    flex: 0 0 70%;
+    flex:  80%;
     height: 100%;
     overflow: hidden;
 }

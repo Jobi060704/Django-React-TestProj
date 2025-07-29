@@ -44,7 +44,7 @@ function Companies() {
 
             L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
                 maxZoom: 19,
-                attribution: "© ArcGIS All rights reserved. -------"
+                attribution: "© ArcGIS"
             }).addTo(mapRef.current);
         }
     }, []);
@@ -73,38 +73,30 @@ function Companies() {
         }
     }, [companies]);
 
+    const handleCompanyClick = (company) => {
+        setSelectedCompany(company);
+        if (company.location && mapRef.current) {
+            const { lat, lng } = company.location;
+            mapRef.current.setView([lat, lng], 13);
+        }
+    };
+
     return (
         <div className="company-container">
-            <div className="company-table">
+            <div className="company-list">
                 <h2>Companies</h2>
-                <table>
-                    <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Name</th>
-                        <th>Owner</th>
-                    </tr>
-                    </thead>
-                    <tbody>
+                <div className="company-boxes">
                     {companies.map((company) => (
-                        <tr
+                        <div
                             key={company.id}
-                            onClick={() => {
-                                setSelectedCompany(company);
-                                if (company.location && mapRef.current) {
-                                    const { lat, lng } = company.location;
-                                    mapRef.current.setView([lat, lng], 13);
-                                }
-                            }}
-                            style={{ cursor: "pointer" }}
+                            className="company-box"
+                            onClick={() => handleCompanyClick(company)}
                         >
-                            <td>{company.id}</td>
-                            <td>{company.name}</td>
-                            <td>{company.owner}</td>
-                        </tr>
+                            <h3>{company.name}</h3>
+                            <p>Owner: {company.owner}</p>
+                        </div>
                     ))}
-                    </tbody>
-                </table>
+                </div>
             </div>
 
             <div className="company-map" id="company-map"></div>
