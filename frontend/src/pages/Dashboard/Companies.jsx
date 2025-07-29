@@ -9,6 +9,17 @@ function Companies() {
     const [selectedCompany, setSelectedCompany] = useState(null);
     const mapRef = useRef(null);
     const markersRef = useRef({});  // Store markers by company ID
+    const [sortKey, setSortKey] = useState("name");
+    const [sortOrder, setSortOrder] = useState("asc");
+
+    const sortedCompanies = [...companies].sort((a, b) => {
+        const aVal = a[sortKey]?.toLowerCase?.() || "";
+        const bVal = b[sortKey]?.toLowerCase?.() || "";
+        if (aVal < bVal) return sortOrder === "asc" ? -1 : 1;
+        if (aVal > bVal) return sortOrder === "asc" ? 1 : -1;
+        return 0;
+    });
+
 
     // Load and parse companies
     useEffect(() => {
@@ -84,9 +95,31 @@ function Companies() {
     return (
         <div className="company-container">
             <div className="company-list">
-                <h2>Companies</h2>
+                <div className="company-header">
+                    <h2>Companies</h2>
+                    <div className="sort-controls">
+                        <label htmlFor="sort-select">Sort:</label>
+                        <select
+                            id="sort-select"
+                            value={sortKey}
+                            onChange={(e) => setSortKey(e.target.value)}
+                        >
+                            <option value="name">Name</option>
+                            <option value="owner">Owner</option>
+                        </select>
+                        <button
+                            className="sort-arrow"
+                            onClick={() =>
+                                setSortOrder(sortOrder === "asc" ? "desc" : "asc")
+                            }
+                        >
+                            {sortOrder === "asc" ? "↑" : "↓"}
+                        </button>
+                    </div>
+                </div>
+
                 <div className="company-boxes">
-                    {companies.map((company) => (
+                    {sortedCompanies.map((company) => (
                         <div
                             key={company.id}
                             className="company-box"
@@ -102,6 +135,7 @@ function Companies() {
             <div className="company-map" id="company-map"></div>
         </div>
     );
+
 }
 
 export default Companies;
