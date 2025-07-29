@@ -109,3 +109,26 @@
     font-size: 0.95rem;
 }
 
+.add-company-container {
+    margin-top: 1.5rem;
+    display: flex;
+    justify-content: center;
+}
+
+.add-company-button {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    font-size: 0.95rem;
+    border-radius: 999px;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    transition: background-color 0.2s ease;
+}
+
+.add-company-button:hover {
+    background-color: #218838;
+}

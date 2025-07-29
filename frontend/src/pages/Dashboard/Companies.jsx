@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import {Link} from "react-router-dom";
 import api from "../../api";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
@@ -119,7 +120,7 @@ function Companies() {
                                 className="sort-arrow"
                                 onClick={() =>
                                     setSortOrder(sortOrder === "asc" ? "desc" : "asc")
-                            }
+                                }
                             >
                                 {sortOrder === "asc" ? "↑" : "↓"}
                             </button>
@@ -149,6 +150,12 @@ function Companies() {
                             <p>Owner: {company.owner}</p>
                         </div>
                     ))}
+                </div>
+
+                <div className="add-company-container">
+                    <Link to="/dashboard/companies/add" className="add-company-button">
+                        + Add a Company
+                    </Link>
                 </div>
             </div>
 
