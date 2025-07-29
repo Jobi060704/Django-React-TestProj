@@ -6,7 +6,8 @@ import Landing from "./pages/Dashboard/Landing.jsx";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import MainLayout from "./components/MainLayout";
-import Companies from "./pages/Dashboard/Companies.jsx"; // ✅ Import layout wrapper
+import Companies from "./pages/Dashboard/Companies.jsx";
+import CompanyAdd from "./pages/Dashboard/CompanyAdd.jsx"; // ✅ Import layout wrapper
 
 function Logout() {
     localStorage.clear();
@@ -26,6 +27,8 @@ function App() {
                 <Route path="/dashboard" element={<ProtectedRoute> <MainLayout> <Landing /> </MainLayout> </ProtectedRoute>} />
 
                 <Route path="/dashboard/companies" element={<ProtectedRoute> <MainLayout> <Companies /> </MainLayout> </ProtectedRoute>} />
+                <Route path="/dashboard/companies/add" element={<ProtectedRoute> <MainLayout> <CompanyAdd /> </MainLayout> </ProtectedRoute>} />
+
 
                 <Route path="/login" element={<Login />} />
                 <Route path="/logout" element={<Logout />} />
