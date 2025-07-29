@@ -64,10 +64,9 @@
 
 .company-header {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 1rem;
+    flex-direction: column; /* <== THIS fixes the stacking */
 }
+
 
 .sort-controls {
     display: flex;
@@ -90,3 +89,23 @@
     margin-left: 4px;
     padding: 2px 4px;
 }
+
+.company-header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.search-bar {
+    margin-bottom: 1rem;
+}
+
+.search-bar input {
+    width: 80%;
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 0.95rem;
+}
+
