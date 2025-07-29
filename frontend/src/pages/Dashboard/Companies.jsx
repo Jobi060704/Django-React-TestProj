@@ -177,11 +177,6 @@ function Companies() {
                         ))}
                     </div>
 
-                    <div className="add-company-container">
-                        <Link to="/dashboard/companies/add" className="add-company-button">
-                            + Add a Company
-                        </Link>
-                    </div>
                 </div>
             </div>
 
