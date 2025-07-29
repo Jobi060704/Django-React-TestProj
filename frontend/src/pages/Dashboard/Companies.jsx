@@ -129,18 +129,24 @@ function Companies() {
                     </div>
 
                     <div className="search-bar">
-                        <input
-                            type="text"
-                            placeholder="Search by company name..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                        />
-                        {searchQuery && (
-                            <button className="clear-search" onClick={() => setSearchQuery("")}>
-                                ✕
-                            </button>
-                        )}
+                        <div className="search-input-wrapper">
+                            <input
+                                type="text"
+                                placeholder="Search by company name..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
+                            {searchQuery && (
+                                <button className="clear-search" onClick={() => setSearchQuery("")}>
+                                    ✕
+                                </button>
+                            )}
+                        </div>
+                        <Link to="/dashboard/companies/add" className="add-company-button">
+                            + Add
+                        </Link>
                     </div>
+
 
                 </div>
 
