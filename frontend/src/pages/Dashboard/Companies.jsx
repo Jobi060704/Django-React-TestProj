@@ -61,7 +61,7 @@ function Companies() {
                     const { lat, lng } = company.location;
                     const marker = L.marker([lat, lng])
                         .addTo(mapRef.current)
-                        .bindTooltip(company.name, {
+                        .bindTooltip((company.name + " - " + company.owner), {
                             permanent: true,
                             direction: "top",
                             className: "company-tooltip"
