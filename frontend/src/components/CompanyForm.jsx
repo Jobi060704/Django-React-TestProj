@@ -6,9 +6,15 @@ import "../styles/Dashboard/Companies.css";
 function CompanyForm({ initialData = {}, onSubmit, onCancel }) {
     const [name, setName] = useState(initialData.name || "");
     const [center, setCenter] = useState(initialData.center || "");
+    const [isPicking, setIsPicking] = useState(false);
 
+    const isPickingRef = useRef(false);
     const mapRef = useRef(null);
     const markerRef = useRef(null);
+
+    useEffect(() => {
+        isPickingRef.current = isPicking;
+    }, [isPicking]);
 
     useEffect(() => {
         if (!mapRef.current) {
@@ -20,9 +26,12 @@ function CompanyForm({ initialData = {}, onSubmit, onCancel }) {
             }).addTo(mapRef.current);
 
             mapRef.current.on("click", (e) => {
+                if (!isPickingRef.current) return;
+
                 const { lat, lng } = e.latlng;
                 const wkt = `SRID=4326;POINT(${lng} ${lat})`;
                 setCenter(wkt);
+                setIsPicking(false); // disable picking after selection
 
                 if (markerRef.current) {
                     markerRef.current.setLatLng(e.latlng);
@@ -31,7 +40,7 @@ function CompanyForm({ initialData = {}, onSubmit, onCancel }) {
                 }
             });
 
-            // Optional: set existing center if editing
+            // Place existing marker if editing
             if (initialData.center && initialData.center.includes("POINT")) {
                 const wkt = initialData.center.replace("SRID=4326;", "").trim();
                 const match = wkt.match(/POINT\s*\(([-\d.]+)\s+([-\d.]+)\)/);
@@ -44,7 +53,7 @@ function CompanyForm({ initialData = {}, onSubmit, onCancel }) {
                 }
             }
         }
-    }, []);
+    }, [initialData.center]);
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -66,13 +75,20 @@ function CompanyForm({ initialData = {}, onSubmit, onCancel }) {
                 </label>
 
                 <label>
-                    Center (Click on map to select):
+                    Center:
                     <input
                         type="text"
                         value={center}
                         readOnly
-                        placeholder="Click on map..."
+                        placeholder="Click 'Pick on Map'..."
                     />
+                    <button
+                        type="button"
+                        className="pick-center-button"
+                        onClick={() => setIsPicking(true)}
+                    >
+                        Pick on Map
+                    </button>
                 </label>
 
                 <div className="form-buttons">
