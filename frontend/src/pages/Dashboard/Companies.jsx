@@ -137,25 +137,25 @@ function Companies() {
                     </div>
                 </div>
 
+                <div className="company-list-content">
+                    <div className="company-boxes">
+                        {sortedCompanies.map((company) => (
+                            <div
+                                key={company.id}
+                                className="company-box"
+                                onClick={() => handleCompanyClick(company)}
+                            >
+                                <h3>{company.name}</h3>
+                                <p>Owner: {company.owner}</p>
+                            </div>
+                        ))}
+                    </div>
 
-
-                <div className="company-boxes">
-                    {sortedCompanies.map((company) => (
-                        <div
-                            key={company.id}
-                            className="company-box"
-                            onClick={() => handleCompanyClick(company)}
-                        >
-                            <h3>{company.name}</h3>
-                            <p>Owner: {company.owner}</p>
-                        </div>
-                    ))}
-                </div>
-
-                <div className="add-company-container">
-                    <Link to="/dashboard/companies/add" className="add-company-button">
-                        + Add a Company
-                    </Link>
+                    <div className="add-company-container">
+                        <Link to="/dashboard/companies/add" className="add-company-button">
+                            + Add a Company
+                        </Link>
+                    </div>
                 </div>
             </div>
 
