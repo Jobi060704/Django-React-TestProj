@@ -1,22 +1,30 @@
 // src/components/Sidebar.jsx
 import { Link } from "react-router-dom";
-import {FaChartBar, FaIndustry, FaMapMarkedAlt, FaDrawPolygon, FaTint, FaSolarPanel} from "react-icons/fa";
+import {FaChartBar, FaIndustry, FaMapMarkedAlt, FaDrawPolygon, FaTint, FaSolarPanel, FaLandmark} from "react-icons/fa";
 import {FaCircleDot, FaCircleH, FaMapLocation, FaPersonHiking, FaTruckField} from "react-icons/fa6";
 import "../styles/Sidebar.css";
 
 const Sidebar = () => {
     return (
         <aside className="sidebar">
+            <ul> {/*Landing*/}
+                <li>
+                    <Link to="/dashboard">
+                        <FaLandmark className="sidebar-icon" />
+                        Landing
+                    </Link>
+                </li>
+            </ul>
 
             <ul> {/*Dashboard and Map*/}
                 <li>
-                    <Link to="/dashboard">
+                    <Link to="/dashboard/statistics">
                         <FaChartBar className="sidebar-icon" />
-                        Dashboard
+                        Statistics
                     </Link>
                 </li>
                 <li>
-                    <Link to="/map">
+                    <Link to="/dashboard/map">
                         <FaMapLocation className="sidebar-icon" />
                         Map view
                     </Link>
@@ -31,25 +39,25 @@ const Sidebar = () => {
                     </Link>
                 </li>
                 <li>
-                    <Link to="/regions">
+                    <Link to="/dashboard/regions">
                         <FaMapMarkedAlt className="sidebar-icon" />
                         Regions
                     </Link>
                 </li>
                 <li>
-                    <Link to="/sectors">
+                    <Link to="/dashboard/sectors">
                         <FaDrawPolygon className="sidebar-icon" />
                         Sectors
                     </Link>
                 </li>
                 <li>
-                    <Link to="/pivots">
+                    <Link to="/dashboard/pivots">
                         <FaCircleDot className="sidebar-icon" />
                         Pivots
                     </Link>
                 </li>
                 <li>
-                    <Link to="/fields">
+                    <Link to="/dashboard/fields">
                         <FaSolarPanel className="sidebar-icon" />
                         Fields
                     </Link>

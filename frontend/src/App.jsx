@@ -24,6 +24,7 @@ function App() {
             <Routes>
                 <Route path="/" element={<Navigate to="/dashboard" replace />} />
                 <Route path="/dashboard" element={<ProtectedRoute> <MainLayout> <Landing /> </MainLayout> </ProtectedRoute>} />
+
                 <Route path="/dashboard/companies" element={<ProtectedRoute> <MainLayout> <Companies /> </MainLayout> </ProtectedRoute>} />
 
                 <Route path="/login" element={<Login />} />
