@@ -8,6 +8,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import MainLayout from "./components/MainLayout";
 import Companies from "./pages/Dashboard/Companies.jsx";
 import CompanyAdd from "./pages/Dashboard/CompanyAdd.jsx"; // ✅ Import layout wrapper
+import CompanyEdit from "./pages/Dashboard/CompanyEdit.jsx"; // ✅ Import layout wrapper
 
 function Logout() {
     localStorage.clear();
@@ -28,6 +29,7 @@ function App() {
 
                 <Route path="/dashboard/companies" element={<ProtectedRoute> <MainLayout> <Companies /> </MainLayout> </ProtectedRoute>} />
                 <Route path="/dashboard/companies/add" element={<ProtectedRoute> <MainLayout> <CompanyAdd /> </MainLayout> </ProtectedRoute>} />
+                <Route path="/dashboard/companies/:id/edit" element={<ProtectedRoute> <MainLayout> <CompanyEdit /> </MainLayout> </ProtectedRoute>} />
 
 
                 <Route path="/login" element={<Login />} />
