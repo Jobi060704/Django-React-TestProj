@@ -40,11 +40,11 @@ function Companies() {
     // Initialize map once
     useEffect(() => {
         if (!mapRef.current) {
-            mapRef.current = L.map("company-map").setView([40.4, 49.8], 7);
+            mapRef.current = L.map("company-map").setView([40.4, 49.8], 3);
 
             L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
                 maxZoom: 19,
-                attribution: "© Esri, Maxar, Earthstar Geographics, and the GIS User Community"
+                attribution: "© ArcGIS All rights reserved. -------"
             }).addTo(mapRef.current);
         }
     }, []);
@@ -62,7 +62,7 @@ function Companies() {
                     const marker = L.marker([lat, lng])
                         .addTo(mapRef.current)
                         .bindTooltip((company.name + " - " + company.owner), {
-                            permanent: true,
+                            permanent: false,
                             direction: "top",
                             className: "company-tooltip"
                         });
