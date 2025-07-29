@@ -1,9 +1,50 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 import "../styles/Dashboard/Companies.css";
 
 function CompanyForm({ initialData = {}, onSubmit, onCancel }) {
     const [name, setName] = useState(initialData.name || "");
     const [center, setCenter] = useState(initialData.center || "");
+
+    const mapRef = useRef(null);
+    const markerRef = useRef(null);
+
+    useEffect(() => {
+        if (!mapRef.current) {
+            mapRef.current = L.map("company-map").setView([40.4, 49.8], 5);
+
+            L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
+                maxZoom: 19,
+                attribution: "© ArcGIS"
+            }).addTo(mapRef.current);
+
+            mapRef.current.on("click", (e) => {
+                const { lat, lng } = e.latlng;
+                const wkt = `SRID=4326;POINT(${lng} ${lat})`;
+                setCenter(wkt);
+
+                if (markerRef.current) {
+                    markerRef.current.setLatLng(e.latlng);
+                } else {
+                    markerRef.current = L.marker(e.latlng).addTo(mapRef.current);
+                }
+            });
+
+            // Optional: set existing center if editing
+            if (initialData.center && initialData.center.includes("POINT")) {
+                const wkt = initialData.center.replace("SRID=4326;", "").trim();
+                const match = wkt.match(/POINT\s*\(([-\d.]+)\s+([-\d.]+)\)/);
+                if (match) {
+                    const lng = parseFloat(match[1]);
+                    const lat = parseFloat(match[2]);
+                    const latlng = L.latLng(lat, lng);
+                    mapRef.current.setView(latlng, 10);
+                    markerRef.current = L.marker(latlng).addTo(mapRef.current);
+                }
+            }
+        }
+    }, []);
 
     const handleSubmit = (e) => {
         e.preventDefault();
