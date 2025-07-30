@@ -177,20 +177,3 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOWS_CREDENTIALS = True
-
-GDAL_LIBRARY_PATH = r'C:\OSGeo4W\bin\gdal311.dll'
-GEOS_LIBRARY_PATH = r'C:\OSGeo4W\bin\geos_c.dll'
-
-
-# Use WGS84 (SRID 4326) by default for admin map tools
-OSM_GEOSERVER_URL = 'https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}.png'  # Optional, default tiles
-DEFAULT_MAP_CENTER = (40.4093, 49.8671)  # Baku
-DEFAULT_ZOOM = 7
-
-# Important:
-# This makes sure the map and coords match
-from django.contrib.gis import geos
-GEOSGeometry = geos.GEOSGeometry
-
-# Optional for explicitness
-SRID = 4326

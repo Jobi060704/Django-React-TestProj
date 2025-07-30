@@ -1,6 +1,5 @@
 from django.db import models
 from django.contrib.auth.models import User
-from django.contrib.gis.db import models as geomodels
 from math import pi
 
 CROP_CHOICES = [
@@ -17,28 +16,28 @@ CROP_CHOICES = [
 class Company(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='owned_companies')
     name = models.CharField(max_length=100, unique=True)  # Required (so remove null/blank)
-    center = geomodels.PointField(srid=4326, geography=True, null=True, blank=True)  # Optional
+    center = models.CharField(max_length=1000, null=True, blank=True)  # WKT POINT
 
     def __str__(self):
         return self.name
 
 
-class Region(geomodels.Model):
+class Region(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='regions')
     name = models.CharField(max_length=100)  # Required
-    center = geomodels.PointField(srid=4326, geography=True, null=True, blank=True)  # Optional
+    center = models.CharField(max_length=1000, null=True, blank=True)  # WKT POINT
 
     def __str__(self):
         return f"{self.name} ({self.company.name})"
 
 
-class WaterwaySector(geomodels.Model):
+class WaterwaySector(models.Model):
     region = models.ForeignKey(Region, on_delete=models.CASCADE, related_name='sectors')
-    name = models.CharField(max_length=100)  # Required
-    area_ha = models.FloatField(null=True, blank=True)  # Auto-calculated
-    total_water_requirement = models.FloatField(default=0)  # Required but default to 0
-    shape = geomodels.PolygonField(srid=4326, geography=True, null=True, blank=True)  # Optional
-    color = models.CharField(max_length=7, default="#0000FF")  # Default blue for sectors
+    name = models.CharField(max_length=100)
+    area_ha = models.FloatField(null=True, blank=True)
+    total_water_requirement = models.FloatField(default=0)
+    shape = models.TextField(null=True, blank=True)  # WKT POLYGON
+    color = models.CharField(max_length=7, default="#0000FF")
 
     def __str__(self):
         return f"{self.name} ({self.region.name})"
@@ -52,60 +51,44 @@ class WaterwaySector(geomodels.Model):
         return self.pivots.count()
 
     def save(self, *args, **kwargs):
-        if self.shape:
-            try:
-                deg_area = self.shape.area
-                self.area_ha = deg_area * 979000  # Convert degree² → ha (approx)
-            except Exception as e:
-                print(f"Failed to calculate area: {e}")
+        # Area should be calculated on the client and passed in
         super().save(*args, **kwargs)
 
 
-class CropPivot(geomodels.Model):
+class CropPivot(models.Model):
     sector = models.ForeignKey(WaterwaySector, on_delete=models.CASCADE, related_name='pivots')
-    logical_name = models.CharField(max_length=10)  # Required (short name like P01)
-    area = models.FloatField()  # Auto-calculated
+    logical_name = models.CharField(max_length=10)
+    area = models.FloatField()  # Now must be calculated client-side and passed in
     crop_1 = models.CharField(max_length=50, choices=CROP_CHOICES, blank=True, null=True)
     crop_2 = models.CharField(max_length=50, choices=CROP_CHOICES, blank=True, null=True)
     crop_3 = models.CharField(max_length=50, choices=CROP_CHOICES, blank=True, null=True)
     crop_4 = models.CharField(max_length=50, choices=CROP_CHOICES, blank=True, null=True)
     seeding_date = models.DateField(null=True, blank=True)
     harvest_date = models.DateField(null=True, blank=True)
-    center = geomodels.PointField(srid=4326, geography=True, null=True, blank=True)
+    center = models.CharField(max_length=1000, null=True, blank=True)  # WKT POINT
     radius_m = models.FloatField(default=100.0)
-    color = models.CharField(max_length=7, default="#008000")  # Default green for pivots
-
-    def save(self, *args, **kwargs):
-        # Auto-calculate area as π * r², and convert m² to hectares (1 ha = 10,000 m²)
-        self.area = round((pi * (self.radius_m ** 2)) / 10000, 2)
-        super().save(*args, **kwargs)
+    color = models.CharField(max_length=7, default="#008000")
 
     def __str__(self):
         return f"{self.logical_name} – {self.sector.name}"
 
 
-class CropField(geomodels.Model):
+class CropField(models.Model):
     sector = models.ForeignKey(WaterwaySector, on_delete=models.CASCADE, related_name='fields')
-    logical_name = models.CharField(max_length=10)  # Required (short name like F01)
-    area = models.FloatField()  # Auto-calculated
+    logical_name = models.CharField(max_length=10)
+    area = models.FloatField()
     crop_1 = models.CharField(max_length=50, choices=CROP_CHOICES, blank=True, null=True)
     crop_2 = models.CharField(max_length=50, choices=CROP_CHOICES, blank=True, null=True)
     crop_3 = models.CharField(max_length=50, choices=CROP_CHOICES, blank=True, null=True)
     crop_4 = models.CharField(max_length=50, choices=CROP_CHOICES, blank=True, null=True)
     seeding_date = models.DateField(null=True, blank=True)
     harvest_date = models.DateField(null=True, blank=True)
-    center = geomodels.PointField(srid=4326, geography=True, null=True, blank=True)
-    shape = geomodels.PolygonField(srid=4326, geography=True, null=True, blank=True)  # Optional
-    color = models.CharField(max_length=7, default="#000080")  # Default blue for fields
+    center = models.CharField(max_length=1000, null=True, blank=True)  # WKT POINT
+    shape = models.TextField(null=True, blank=True)  # WKT POLYGON
+    color = models.CharField(max_length=7, default="#000080")
 
     def save(self, *args, **kwargs):
-
-        if self.shape:
-            try:
-                deg_area = self.shape.area
-                self.area = deg_area * 979000  # Convert degree² → ha (approx)
-            except Exception as e:
-                print(f"Failed to calculate area: {e}")
+        # Area should be calculated client-side
         super().save(*args, **kwargs)
 
     def __str__(self):
