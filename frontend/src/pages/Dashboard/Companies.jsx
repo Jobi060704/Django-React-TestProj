@@ -102,16 +102,16 @@ function Companies() {
                 ) {
                     const { lat, lng } = company.location;
 
-                    const icon = L.icon({
-                        iconUrl: markerIcon,
-                        shadowUrl: markerShadow,
+                    const customIcon = L.icon({
+                        iconUrl: "/marker-icon.png",      // public path
+                        shadowUrl: "/marker-shadow.png",
                         iconSize: [25, 41],
                         iconAnchor: [12, 41],
                         popupAnchor: [1, -34],
                         shadowSize: [41, 41],
                     });
 
-                    const marker = L.marker([lat, lng], { icon })
+                    const marker = L.marker([lat, lng], { icon: customIcon })
                         .addTo(mapRef.current)
                         .bindTooltip((company.name + " - " + company.owner), {
                             permanent: false,
