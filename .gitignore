@@ -1,4 +1,21 @@
-.venv1
-backend/api/__pycache__/*
-backend/backend/__pycache__/*
-backend/api/migrations/__pycache__/*
+# Python bytecode
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Django migrations
+*/migrations/__pycache__/
+*/migrations/*.pyc
+
+# VS Code and other IDEs
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
