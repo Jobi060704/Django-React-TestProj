@@ -3,6 +3,8 @@ import {Link} from "react-router-dom";
 import api from "../../api";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
+import markerIcon from "leaflet/dist/images/marker-icon.png";
+import markerShadow from "leaflet/dist/images/marker-shadow.png";
 import "../../styles/Dashboard/Companies.css";
 import {FaEdit, FaTrash} from "react-icons/fa";
 import WarningBox from "../../components/WarningBox.jsx";
@@ -99,7 +101,17 @@ function Companies() {
                     !markersRef.current[company.id]
                 ) {
                     const { lat, lng } = company.location;
-                    const marker = L.marker([lat, lng])
+
+                    const icon = L.icon({
+                        iconUrl: markerIcon,
+                        shadowUrl: markerShadow,
+                        iconSize: [25, 41],
+                        iconAnchor: [12, 41],
+                        popupAnchor: [1, -34],
+                        shadowSize: [41, 41],
+                    });
+
+                    const marker = L.marker([lat, lng], { icon })
                         .addTo(mapRef.current)
                         .bindTooltip((company.name + " - " + company.owner), {
                             permanent: false,
