@@ -3,7 +3,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "../styles/ModelAndMapLayout.css";
 
-function CompanyForm({ initialData = {}, onSubmit, onCancel }) {
+function ModelForm({ initialData = {}, onSubmit, onCancel, modelName = "Item" }) {
     const [name, setName] = useState(initialData.name || "");
     const [center, setCenter] = useState(initialData.center || "");
     const [isPicking, setIsPicking] = useState(false);
@@ -18,7 +18,7 @@ function CompanyForm({ initialData = {}, onSubmit, onCancel }) {
 
     useEffect(() => {
         if (!mapRef.current) {
-            mapRef.current = L.map("company-map").setView([40.4, 49.8], 5);
+            mapRef.current = L.map("model-map").setView([40.4, 49.8], 5);
 
             L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
                 maxZoom: 19,
@@ -31,7 +31,7 @@ function CompanyForm({ initialData = {}, onSubmit, onCancel }) {
                 const { lat, lng } = e.latlng;
                 const wkt = `SRID=4326;POINT(${lng} ${lat})`;
                 setCenter(wkt);
-                setIsPicking(false); // disable picking after selection
+                setIsPicking(false);
 
                 if (markerRef.current) {
                     markerRef.current.setLatLng(e.latlng);
@@ -40,7 +40,6 @@ function CompanyForm({ initialData = {}, onSubmit, onCancel }) {
                 }
             });
 
-            // Place existing marker if editing
             if (initialData.center && initialData.center.includes("POINT")) {
                 const wkt = initialData.center.replace("SRID=4326;", "").trim();
                 const match = wkt.match(/POINT\s*\(([-\d.]+)\s+([-\d.]+)\)/);
@@ -61,11 +60,11 @@ function CompanyForm({ initialData = {}, onSubmit, onCancel }) {
     };
 
     return (
-        <div className="company-list">
-            <h2>{initialData.id ? "Edit Company" : "Add Company"}</h2>
-            <form onSubmit={handleSubmit} className="company-form">
+        <div className="model-list">
+            <h2>{initialData.id ? `Edit ${modelName}` : `Add ${modelName}`}</h2>
+            <form onSubmit={handleSubmit} className="model-form">
                 <label>
-                    Company Name:
+                    {modelName} Name:
                     <input
                         type="text"
                         value={name}
@@ -104,4 +103,4 @@ function CompanyForm({ initialData = {}, onSubmit, onCancel }) {
     );
 }
 
-export default CompanyForm;
+export default ModelForm;

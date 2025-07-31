@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import api from "../../api.js";
-import CompanyForm from "../../components/CompanyForm.jsx";
+import ModelForm from "../../components/ModelForm.jsx";
+import ModelAndMapLayout from "../../components/ModelAndMapLayout.jsx";
+import "../../styles/ModelAndMapLayout.css";
 
 function CompanyEdit() {
     const { id } = useParams();
@@ -30,14 +32,17 @@ function CompanyEdit() {
     if (!initialData) return <p>Loading...</p>;
 
     return (
-        <div className="company-container">
-            <CompanyForm
-                initialData={initialData}
-                onSubmit={handleUpdate}
-                onCancel={() => navigate("/dashboard/companies")}
-            />
-            <div className="company-map" id="company-map"></div>
-        </div>
+        <ModelAndMapLayout
+            leftPanel={
+                <ModelForm
+                    modelName="Company"
+                    initialData={initialData}
+                    onSubmit={handleUpdate}
+                    onCancel={() => navigate("/dashboard/companies")}
+                />
+            }
+            rightPanel={<div id="model-map" className="model-map" />}
+        />
     );
 }
 

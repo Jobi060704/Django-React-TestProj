@@ -1,6 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import api from "../../api.js";
-import CompanyForm from "../../components/CompanyForm.jsx";
+import ModelForm from "../../components/ModelForm.jsx";
+import ModelAndMapLayout from "../../components/ModelAndMapLayout.jsx";
+import "../../styles/ModelAndMapLayout.css";
 
 function CompanyAdd() {
     const navigate = useNavigate();
@@ -15,10 +17,16 @@ function CompanyAdd() {
     };
 
     return (
-        <div className="company-container">
-                <CompanyForm onSubmit={handleCreate} onCancel={() => navigate("/dashboard/companies")} />
-            <div className="company-map" id="company-map"></div>
-        </div>
+        <ModelAndMapLayout
+            leftPanel={
+                <ModelForm
+                    modelName="Company"
+                    onSubmit={handleCreate}
+                    onCancel={() => navigate("/dashboard/companies")}
+                />
+            }
+            rightPanel={<div id="model-map" className="model-map" />}
+        />
     );
 }
 
