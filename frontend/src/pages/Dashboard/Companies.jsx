@@ -18,6 +18,18 @@ function Companies() {
     const [sortOrder, setSortOrder] = useState("asc");
     const [searchQuery, setSearchQuery] = useState("");
     const [companyToDelete, setCompanyToDelete] = useState(null);
+    const [expandedOwners, setExpandedOwners] = useState({});
+
+    const toggleOwnerGroup = (owner) => {
+        setExpandedOwners(prev => ({
+            ...prev,
+            [owner]: !prev[owner]
+        }));
+    };
+
+
+
+
 
     const handleDeleteRequest = (e, company) => {
         e.stopPropagation();
@@ -49,6 +61,13 @@ function Companies() {
             ? valA.localeCompare(valB)
             : valB.localeCompare(valA);
     });
+
+    const groupedCompanies = sortedCompanies.reduce((acc, company) => {
+        const owner = company.owner || "Unknown";
+        if (!acc[owner]) acc[owner] = [];
+        acc[owner].push(company);
+        return acc;
+    }, {});
 
 
 
@@ -194,29 +213,46 @@ function Companies() {
 
                     <div className="company-list-content">
                         <div className="company-boxes">
-                            {sortedCompanies.map((company) => (
-                                <div
-                                    key={company.id}
-                                    className="company-box"
-                                    onClick={() => handleCompanyClick(company)}
-                                >
-                                    <div className="company-box-top">
-                                        <h3>{company.name}</h3>
-                                        <div className="company-actions">
-                                            <Link to={`/dashboard/companies/${company.id}/edit`}>
-                                                <FaEdit className="action-icon edit" />
-                                            </Link>
-                                            <button className="action-icon delete"
-                                                    onClick={(e) => handleDeleteRequest(e, company)}
-                                            >
-                                                <FaTrash />
-                                            </button>
-                                        </div>
+                            {Object.entries(groupedCompanies).map(([owner, companiesInGroup]) => (
+                                <div key={owner} className="company-group">
+                                    <div
+                                        className="company-group-header"
+                                        onClick={() => toggleOwnerGroup(owner)}
+                                    >
+                                        <strong>{owner}</strong>
+                                        <span className="collapse-icon">{expandedOwners[owner] ? "−" : "+"}</span>
                                     </div>
-                                    <p>Owner: {company.owner}</p>
+
+                                    {expandedOwners[owner] && (
+                                        <div className="company-group-boxes">
+                                            {companiesInGroup.map((company) => (
+                                                <div
+                                                    key={company.id}
+                                                    className="company-box"
+                                                    onClick={() => handleCompanyClick(company)}
+                                                >
+                                                    <div className="company-box-top">
+                                                        <h3>{company.name}</h3>
+                                                        <div className="company-actions">
+                                                            <Link to={`/dashboard/companies/${company.id}/edit`}>
+                                                                <FaEdit className="action-icon edit" />
+                                                            </Link>
+                                                            <button
+                                                                className="action-icon delete"
+                                                                onClick={(e) => handleDeleteRequest(e, company)}
+                                                            >
+                                                                <FaTrash />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             ))}
                         </div>
+
 
                     </div>
                 </div>
