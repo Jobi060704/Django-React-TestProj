@@ -15,6 +15,8 @@ from datetime import timedelta
 from dotenv import load_dotenv
 import os
 
+import dj_database_url
+
 load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -109,17 +111,22 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 #     }
 # }
 
-DATABASES = {
-    "default": {
-        "ENGINE": os.getenv("DB_ENGINE"),
-        "NAME": os.getenv("DB_NAME"),
-        "USER": os.getenv("DB_USER"),
-        "PASSWORD": os.getenv("DB_PWD"),
-        "HOST": os.getenv("DB_HOST"),
-        "PORT": os.getenv("DB_PORT"),
-    }
-}
+# django.db.backends.postgresql
 
+# DATABASES = {
+#     "default": {
+#         "ENGINE": os.getenv("DB_ENGINE"),
+#         "NAME": os.getenv("DB_NAME"),
+#         "USER": os.getenv("DB_USER"),
+#         "PASSWORD": os.getenv("DB_PWD"),
+#         "HOST": os.getenv("DB_HOST"),
+#         "PORT": os.getenv("DB_PORT"),
+#     }
+# }
+
+DATABASES = {
+    'default': dj_database_url.config(default="postgresql://admin:4rwmxyMqpdyvcO0VCC34EtAoTRGFGrbX@dpg-d24ufuadbo4c73a4fnfg-a.frankfurt-postgres.render.com/agrodb_vtm6")
+}
 
 # DATABASES = {
 #
@@ -175,5 +182,9 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOWS_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = [
+    "https://smartcrop-frontend.onrender.com",
+]
+
+CORS_ALLOW_CREDENTIALS = False  # You're using token auth, not cookies
+
