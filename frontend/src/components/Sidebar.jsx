@@ -1,7 +1,7 @@
 // src/components/Sidebar.jsx
 import { Link } from "react-router-dom";
-import {FaChartBar, FaIndustry, FaMapMarkedAlt, FaDrawPolygon, FaTint, FaSolarPanel, FaLandmark} from "react-icons/fa";
-import {FaCircleDot, FaCircleH, FaMapLocation, FaPersonHiking, FaTruckField} from "react-icons/fa6";
+import {FaChartBar,FaIndustry,FaMapMarkedAlt,FaDrawPolygon,FaTint,FaSolarPanel,FaLandmark,FaTable} from "react-icons/fa";
+import {FaCircleDot, FaCircleH, FaMapLocation, FaPersonHiking, FaTableCells, FaTruckField} from "react-icons/fa6";
 import "../styles/Sidebar.css";
 
 const Sidebar = () => {
@@ -69,6 +69,15 @@ const Sidebar = () => {
                     <Link to="/scouting">
                         <FaPersonHiking className="sidebar-icon" />
                         Scouting
+                    </Link>
+                </li>
+            </ul>
+
+            <ul> {/*Extras*/}
+                <li>
+                    <Link to="/croprotation">
+                        <FaTable className="sidebar-icon" />
+                        Crop Rotation
                     </Link>
                 </li>
             </ul>
