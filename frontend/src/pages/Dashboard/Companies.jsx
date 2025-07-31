@@ -5,7 +5,7 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
-import "../../styles/Dashboard/Companies.css";
+import "../../styles/ModelAndMapLayout.css";
 import {FaEdit, FaTrash} from "react-icons/fa";
 import WarningBox from "../../components/WarningBox.jsx";
 import ModelAndMapLayout from "../../components/ModelAndMapLayout";
@@ -27,10 +27,6 @@ function Companies() {
             [owner]: !prev[owner]
         }));
     };
-
-
-
-
 
     const handleDeleteRequest = (e, company) => {
         e.stopPropagation();
@@ -156,116 +152,109 @@ function Companies() {
     return (
         <ModelAndMapLayout
             leftPanel={
-                    <>
-                        {companyToDelete && (
-                            <WarningBox
-                                message={`Are you sure you want to delete "${companyToDelete.name}"?`}
-                                onConfirm={confirmDelete}
-                                onCancel={() => setCompanyToDelete(null)}
-                            />
-                        )}
+                <>
+                    {companyToDelete && (
+                        <WarningBox
+                            message={`Are you sure you want to delete "${companyToDelete.name}"?`}
+                            onConfirm={confirmDelete}
+                            onCancel={() => setCompanyToDelete(null)}
+                        />
+                    )}
 
-                        <div className="company-container">
-                            <div className="company-list">
-                                <div className="company-header">
-                                    <div className="company-header-top">
-                                        <h2>Companies</h2>
+                    <div className="model-container">
+                        <div className="model-list">
+                            <div className="model-header">
+                                <div className="model-header-top">
+                                    <h2>Companies</h2>
 
-                                        <div className="sort-controls">
-                                            <label htmlFor="sort-select">Sort:</label>
-                                            <select
-                                                id="sort-select"
-                                                value={sortKey}
-                                                onChange={(e) => setSortKey(e.target.value)}
-                                            >
-                                                <option value="name">Name</option>
-                                                <option value="owner">Owner</option>
-                                            </select>
-                                            <button
-                                                className="sort-arrow"
-                                                onClick={() =>
-                                                    setSortOrder(sortOrder === "asc" ? "desc" : "asc")
-                                                }
-                                            >
-                                                {sortOrder === "asc" ? "↑" : "↓"}
-                                            </button>
-                                        </div>
+                                    <div className="sort-controls">
+                                        <label htmlFor="sort-select">Sort:</label>
+                                        <select
+                                            id="sort-select"
+                                            value={sortKey}
+                                            onChange={(e) => setSortKey(e.target.value)}
+                                        >
+                                            <option value="name">Name</option>
+                                            <option value="owner">Owner</option>
+                                        </select>
+                                        <button
+                                            className="sort-arrow"
+                                            onClick={() =>
+                                                setSortOrder(sortOrder === "asc" ? "desc" : "asc")
+                                            }
+                                        >
+                                            {sortOrder === "asc" ? "↑" : "↓"}
+                                        </button>
                                     </div>
-
-                                    <div className="search-bar">
-                                        <div className="search-input-wrapper">
-                                            <input
-                                                type="text"
-                                                placeholder="Search by company name..."
-                                                value={searchQuery}
-                                                onChange={(e) => setSearchQuery(e.target.value)}
-                                            />
-                                            {searchQuery && (
-                                                <button className="clear-search" onClick={() => setSearchQuery("")}>
-                                                    ✕
-                                                </button>
-                                            )}
-                                        </div>
-                                        <Link to="/dashboard/companies/add" className="add-company-button">
-                                            + Add
-                                        </Link>
-                                    </div>
-
-
                                 </div>
 
-                                <div className="company-list-content">
-                                    <div className="company-boxes">
-                                        {Object.entries(groupedCompanies).map(([owner, companiesInGroup]) => (
-                                            <div key={owner} className="company-group">
-                                                <div
-                                                    className="company-group-header"
-                                                    onClick={() => toggleOwnerGroup(owner)}
-                                                >
-                                                    <strong>{owner}</strong>
-                                                    <span className="collapse-icon">{expandedOwners[owner] ? "−" : "+"}</span>
-                                                </div>
-
-                                                {expandedOwners[owner] && (
-                                                    <div className="company-group-boxes">
-                                                        {companiesInGroup.map((company) => (
-                                                            <div
-                                                                key={company.id}
-                                                                className="company-box"
-                                                                onClick={() => handleCompanyClick(company)}
-                                                            >
-                                                                <div className="company-box-top">
-                                                                    <h3>{company.name}</h3>
-                                                                    <div className="company-actions">
-                                                                        <Link to={`/dashboard/companies/${company.id}/edit`}>
-                                                                            <FaEdit className="action-icon edit" />
-                                                                        </Link>
-                                                                        <button
-                                                                            className="action-icon delete"
-                                                                            onClick={(e) => handleDeleteRequest(e, company)}
-                                                                        >
-                                                                            <FaTrash />
-                                                                        </button>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        ))}
+                                <div className="search-bar">
+                                    <div className="search-input-wrapper">
+                                        <input
+                                            type="text"
+                                            placeholder="Search by company name..."
+                                            value={searchQuery}
+                                            onChange={(e) => setSearchQuery(e.target.value)}
+                                        />
+                                        {searchQuery && (
+                                            <button className="clear-search" onClick={() => setSearchQuery("")}>
+                                                ✕
+                                            </button>
+                                        )}
                                     </div>
-
-
+                                    <Link to="/dashboard/companies/add" className="add-model-button">
+                                        + Add
+                                    </Link>
                                 </div>
                             </div>
 
+                            <div className="model-list-content">
+                                <div className="model-boxes">
+                                    {Object.entries(groupedCompanies).map(([owner, companiesInGroup]) => (
+                                        <div key={owner} className="model-group">
+                                            <div
+                                                className="model-group-header"
+                                                onClick={() => toggleOwnerGroup(owner)}
+                                            >
+                                                <strong>{owner}</strong>
+                                                <span className="collapse-icon">{expandedOwners[owner] ? "−" : "+"}</span>
+                                            </div>
+
+                                            {expandedOwners[owner] && (
+                                                <div className="model-group-boxes">
+                                                    {companiesInGroup.map((company) => (
+                                                        <div
+                                                            key={company.id}
+                                                            className="model-box"
+                                                            onClick={() => handleCompanyClick(company)}
+                                                        >
+                                                            <div className="model-box-top">
+                                                                <h3>{company.name}</h3>
+                                                                <div className="model-actions">
+                                                                    <Link to={`/dashboard/companies/${company.id}/edit`}>
+                                                                        <FaEdit className="action-icon edit" />
+                                                                    </Link>
+                                                                    <button
+                                                                        className="action-icon delete"
+                                                                        onClick={(e) => handleDeleteRequest(e, company)}
+                                                                    >
+                                                                        <FaTrash />
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
                         </div>
-                    </>
+                    </div>
+                </>
             }
-            rightPanel={
-                <div id="map"/>
-            }
+            rightPanel={<div id="map" className="model-map" />}
         />
     );
 
