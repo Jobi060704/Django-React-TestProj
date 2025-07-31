@@ -2,6 +2,15 @@
     width: 170px;
     background-color: #f4f4f4;
     height: calc(100vh - 60px);
+    transition: width 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: hidden;
+}
+
+.sidebar.collapsed {
+    width: 60px;
 }
 
 .sidebar ul {
@@ -24,6 +33,7 @@
     font-weight: bold;
     padding: 0.5rem 1rem;
     transition: background 0.2s ease;
+    white-space: nowrap;
 }
 
 .sidebar a:hover {
@@ -31,7 +41,36 @@
     border-radius: 4px;
 }
 
+.sidebar.collapsed a {
+    justify-content: center;
+}
+
 .sidebar-icon {
     margin-right: 0.75rem;
     font-size: 1.2rem;
+    min-width: 20px;
+    text-align: center;
+}
+
+.sidebar.collapsed .sidebar-icon {
+    margin-right: 0;
+}
+
+.sidebar.collapsed a span {
+    display: none;
+}
+
+.toggle-button {
+    padding: 1rem;
+    font-size: 1.2rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-align: center;
+    width: 100%;
+    border-top: 1px solid #ccc;
+}
+
+.toggle-button:hover {
+    background-color: #e0e0e0;
 }
