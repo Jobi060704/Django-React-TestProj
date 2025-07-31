@@ -27,10 +27,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-6(8qp)$*by0#@e*d1m$8vexd*!6)_=@5m7x1)zez97@#l1f3y6'
+SECRET_KEY = os.getenv("SECRET_KEY", "fallback-secret-for-dev")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 
 ALLOWED_HOSTS = ["*"]
 
@@ -105,15 +105,6 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 # DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
-
-# django.db.backends.postgresql
-
-# DATABASES = {
 #     "default": {
 #         "ENGINE": os.getenv("DB_ENGINE"),
 #         "NAME": os.getenv("DB_NAME"),
@@ -124,21 +115,26 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 #     }
 # }
 
-DATABASES = {
-    'default': dj_database_url.config(default="postgresql://admin:4rwmxyMqpdyvcO0VCC34EtAoTRGFGrbX@dpg-d24ufuadbo4c73a4fnfg-a.frankfurt-postgres.render.com/agrodb_vtm6")
-}
+# Determine which database to use
+USE_LOCAL_DB = os.getenv("USE_LOCAL_DB", "false").lower() == "true"
 
-# DATABASES = {
-#
-#     'default': {
-#             'ENGINE': 'django.contrib.gis.db.backends.postgis',
-#             'NAME': 'agri_analytics',     # same as you created
-#             'USER': 'postgres',           # or your actual pgAdmin username
-#             'PASSWORD': 'admin',  # whatever you set during install
-#             'HOST': 'localhost',
-#             'PORT': '5432',
-#         }
-# }
+if USE_LOCAL_DB:
+    DATABASES = {
+        "default": {
+            "ENGINE": os.getenv("DB_ENGINE"),
+            "NAME": os.getenv("DB_NAME"),
+            "USER": os.getenv("DB_USER"),
+            "PASSWORD": os.getenv("DB_PWD"),
+            "HOST": os.getenv("DB_HOST"),
+            "PORT": os.getenv("DB_PORT"),
+        }
+    }
+else:
+    DATABASES = {
+        "default": dj_database_url.config(
+            default=os.getenv("DATABASE_REMOTE_URL")
+        )
+    }
 
 
 # Password validation
@@ -182,9 +178,8 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CORS_ALLOWED_ORIGINS = [
-    "https://smartcrop-frontend.onrender.com",
-]
+cors_origins = os.getenv("CORS_ALLOWED_ORIGINS", "")
+CORS_ALLOWED_ORIGINS = [origin.strip() for origin in cors_origins.split(",") if origin.strip()]
 
 CORS_ALLOW_CREDENTIALS = False  # You're using token auth, not cookies
 
