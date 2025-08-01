@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import api from "../../../api.js";
-import ModelForm from "../../../components/ModelForm.jsx";
+import CompanyForm from "../../../components/CompanyForm.jsx";
 import ModelAndMapLayout from "../../../components/ModelAndMapLayout.jsx";
 import "../../../styles/ModelAndMapLayout.css";
 
@@ -34,7 +34,7 @@ function CompanyEdit() {
     return (
         <ModelAndMapLayout
             leftPanel={
-                <ModelForm
+                <CompanyForm
                     modelName="Company"
                     initialData={initialData}
                     onSubmit={handleUpdate}

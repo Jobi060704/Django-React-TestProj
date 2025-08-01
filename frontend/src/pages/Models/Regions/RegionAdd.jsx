@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import api from "../../../api.js";
-import ModelForm from "../../../components/ModelForm.jsx";
+import RegionForm from "../../../components/RegionForm.jsx";
 import ModelAndMapLayout from "../../../components/ModelAndMapLayout.jsx";
 import "../../../styles/ModelAndMapLayout.css";
 
@@ -19,8 +19,7 @@ function RegionAdd() {
     return (
         <ModelAndMapLayout
             leftPanel={
-                <ModelForm
-                    modelName="Region"
+                <RegionForm
                     onSubmit={handleCreate}
                     onCancel={() => navigate("/dashboard/regions")}
                 />

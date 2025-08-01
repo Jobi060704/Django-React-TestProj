@@ -3,7 +3,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "../styles/ModelAndMapLayout.css";
 
-function ModelForm({ initialData = {}, onSubmit, onCancel, modelName = "Item" }) {
+function CompanyForm({ initialData = {}, onSubmit, onCancel, modelName = "Item" }) {
     const [name, setName] = useState(initialData.name || "");
     const [center, setCenter] = useState(initialData.center || "");
     const [isPicking, setIsPicking] = useState(false);
@@ -103,4 +103,4 @@ function ModelForm({ initialData = {}, onSubmit, onCancel, modelName = "Item" })
     );
 }
 
-export default ModelForm;
+export default CompanyForm;

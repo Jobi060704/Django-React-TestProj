@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import api from "../../../api.js";
-import ModelForm from "../../../components/ModelForm.jsx";
+import CompanyForm from "../../../components/CompanyForm.jsx";
 import ModelAndMapLayout from "../../../components/ModelAndMapLayout.jsx";
 import "../../../styles/ModelAndMapLayout.css";
 
@@ -19,7 +19,7 @@ function CompanyAdd() {
     return (
         <ModelAndMapLayout
             leftPanel={
-                <ModelForm
+                <CompanyForm
                     modelName="Company"
                     onSubmit={handleCreate}
                     onCancel={() => navigate("/dashboard/companies")}
