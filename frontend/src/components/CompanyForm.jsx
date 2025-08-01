@@ -12,6 +12,16 @@ function CompanyForm({ initialData = {}, onSubmit, onCancel, modelName = "Item" 
     const mapRef = useRef(null);
     const markerRef = useRef(null);
 
+    const customIcon = L.icon({
+        iconUrl: "/marker-icon.png",
+        shadowUrl: "/marker-shadow.png",
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41],
+    });
+
+
     useEffect(() => {
         isPickingRef.current = isPicking;
     }, [isPicking]);
@@ -36,7 +46,7 @@ function CompanyForm({ initialData = {}, onSubmit, onCancel, modelName = "Item" 
                 if (markerRef.current) {
                     markerRef.current.setLatLng(e.latlng);
                 } else {
-                    markerRef.current = L.marker(e.latlng).addTo(mapRef.current);
+                    markerRef.current = L.marker(e.latlng, { icon: customIcon }).addTo(mapRef.current);
                 }
             });
 
@@ -48,7 +58,7 @@ function CompanyForm({ initialData = {}, onSubmit, onCancel, modelName = "Item" 
                     const lat = parseFloat(match[2]);
                     const latlng = L.latLng(lat, lng);
                     mapRef.current.setView(latlng, 10);
-                    markerRef.current = L.marker(latlng).addTo(mapRef.current);
+                    markerRef.current = L.marker(latlng, { icon: customIcon }).addTo(mapRef.current);
                 }
             }
         }

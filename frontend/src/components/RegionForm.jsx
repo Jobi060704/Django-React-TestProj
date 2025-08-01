@@ -10,6 +10,16 @@ function RegionForm({ initialData = {}, onSubmit, onCancel }) {
     const [companyId, setCompanyId] = useState("");
     const [companies, setCompanies] = useState([]);
 
+    const customIcon = L.icon({
+        iconUrl: "/marker-icon.png",
+        shadowUrl: "/marker-shadow.png",
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41],
+    });
+
+
     useEffect(() => {
         api.get("/api/companies/")
             .then((res) => {
@@ -65,7 +75,7 @@ function RegionForm({ initialData = {}, onSubmit, onCancel }) {
                 if (markerRef.current) {
                     markerRef.current.setLatLng(e.latlng);
                 } else {
-                    markerRef.current = L.marker(e.latlng).addTo(mapRef.current);
+                    markerRef.current = L.marker(e.latlng, { icon: customIcon }).addTo(mapRef.current);
                 }
             });
 
@@ -75,7 +85,7 @@ function RegionForm({ initialData = {}, onSubmit, onCancel }) {
                 if (match) {
                     const latlng = L.latLng(parseFloat(match[2]), parseFloat(match[1]));
                     mapRef.current.setView(latlng, 10);
-                    markerRef.current = L.marker(latlng).addTo(mapRef.current);
+                    markerRef.current = L.marker(latlng, { icon: customIcon }).addTo(mapRef.current);
                 }
             }
         }
