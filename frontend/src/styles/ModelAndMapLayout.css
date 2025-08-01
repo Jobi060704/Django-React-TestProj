@@ -281,6 +281,16 @@
     font-size: 0.95rem;
 }
 
+.model-form select {
+    margin-top: 4px;
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    background-color: white;
+    color: #333;
+}
+
 .form-buttons {
     display: flex;
     gap: 1rem;
