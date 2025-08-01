@@ -1,14 +1,14 @@
 import { useEffect, useState, useRef } from "react";
 import {Link} from "react-router-dom";
-import api from "../../api";
+import api from "../../../api.js";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
-import "../../styles/ModelAndMapLayout.css";
+import "../../../styles/ModelAndMapLayout.css";
 import {FaEdit, FaTrash} from "react-icons/fa";
-import WarningBox from "../../components/WarningBox.jsx";
-import ModelAndMapLayout from "../../components/ModelAndMapLayout";
+import WarningBox from "../../../components/WarningBox.jsx";
+import ModelAndMapLayout from "../../../components/ModelAndMapLayout.jsx";
 
 function Companies() {
     const [companies, setCompanies] = useState([]);

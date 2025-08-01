@@ -2,13 +2,13 @@ import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/Auth/Login.jsx";
 import Register from "./pages/Auth/Register.jsx";
-import Landing from "./pages/Dashboard/Landing.jsx";
+import Landing from "./pages/Landing.jsx";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import MainLayout from "./components/MainLayout";
-import Companies from "./pages/Dashboard/Companies.jsx";
-import CompanyAdd from "./pages/Dashboard/CompanyAdd.jsx"; // ✅ Import layout wrapper
-import CompanyEdit from "./pages/Dashboard/CompanyEdit.jsx"; // ✅ Import layout wrapper
+import Companies from "./pages/Models/Companies/Companies.jsx";
+import CompanyAdd from "./pages/Models/Companies/CompanyAdd.jsx"; // ✅ Import layout wrapper
+import CompanyEdit from "./pages/Models/Companies/CompanyEdit.jsx"; // ✅ Import layout wrapper
 
 function Logout() {
     localStorage.clear();

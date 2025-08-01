@@ -2,7 +2,7 @@
 // import api from "../api";
 // import Note from "../components/Note";
 
-import "../../styles/Dashboard/Landing.css"
+import "../styles/Dashboard/Landing.css"
 
 function Landing() {
     return (
