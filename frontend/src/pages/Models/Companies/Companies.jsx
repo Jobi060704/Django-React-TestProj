@@ -132,7 +132,7 @@ function Companies() {
                         .bindTooltip((company.name + " - " + company.owner), {
                             permanent: false,
                             direction: "top",
-                            className: "company-tooltip"
+                            className: "model-tooltip"
                         });
 
                     markersRef.current[company.id] = marker;

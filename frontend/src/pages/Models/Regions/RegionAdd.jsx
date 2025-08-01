@@ -8,11 +8,11 @@ function RegionAdd() {
     const navigate = useNavigate();
 
     const handleCreate = (formData) => {
-        api.post("/api/companies/", formData)
-            .then(() => navigate("/dashboard/companies"))
+        api.post("/api/regions/", formData)
+            .then(() => navigate("/dashboard/regions"))
             .catch((err) => {
-                console.error("Failed to create company", err);
-                alert("Failed to create company.");
+                console.error("Failed to create region", err);
+                alert("Failed to create region.");
             });
     };
 
@@ -20,9 +20,9 @@ function RegionAdd() {
         <ModelAndMapLayout
             leftPanel={
                 <ModelForm
-                    modelName="Company"
+                    modelName="Region"
                     onSubmit={handleCreate}
-                    onCancel={() => navigate("/dashboard/companies")}
+                    onCancel={() => navigate("/dashboard/regions")}
                 />
             }
             rightPanel={<div id="model-map" className="model-map" />}

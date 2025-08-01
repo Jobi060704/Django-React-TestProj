@@ -11,47 +11,46 @@ import WarningBox from "../../../components/WarningBox.jsx";
 import ModelAndMapLayout from "../../../components/ModelAndMapLayout.jsx";
 
 function Regions() {
-    const [companies, setCompanies] = useState([]);
-    const [selectedCompany, setSelectedCompany] = useState(null);
+    const [regions, setRegions] = useState([]);
+    const [selectedRegion, setSelectedRegion] = useState(null);
     const mapRef = useRef(null);
     const markersRef = useRef({});  // Store markers by company ID
     const [sortKey, setSortKey] = useState("name");
     const [sortOrder, setSortOrder] = useState("asc");
     const [searchQuery, setSearchQuery] = useState("");
-    const [companyToDelete, setCompanyToDelete] = useState(null);
-    const [expandedOwners, setExpandedOwners] = useState({});
+    const [regionToDelete, setRegionToDelete] = useState(null);
+    const [expandedCompanies, setExpandedCompanies] = useState({});
 
-    const toggleOwnerGroup = (owner) => {
-        setExpandedOwners(prev => ({
+    const toggleCompanyGroup = (company) => {
+        setExpandedCompanies(prev => ({
             ...prev,
-            [owner]: !prev[owner]
+            [company]: !prev[company]
         }));
     };
 
-    const handleDeleteRequest = (e, company) => {
+    const handleDeleteRequest = (e, region) => {
         e.stopPropagation();
-        setCompanyToDelete(company);
+        setRegionToDelete(region);
     };
 
     const confirmDelete = () => {
-        api.delete(`/api/companies/${companyToDelete.id}/`)
+        api.delete(`/api/regions/${regionToDelete.id}/`)
             .then(() => {
-                setCompanies((prev) => prev.filter(c => c.id !== companyToDelete.id));
-                setCompanyToDelete(null);
+                setRegions((prev) => prev.filter(r => r.id !== regionToDelete.id));
+                setRegionToDelete(null);
             })
             .catch((err) => {
-                console.error("Failed to delete company", err);
-                alert("Failed to delete company.");
-                setCompanyToDelete(null);
+                console.error("Failed to delete region", err);
+                alert("Failed to delete region.");
+                setRegionToDelete(null);
             });
     };
 
-
-    const filteredCompanies = companies.filter((company) =>
-        company.name.toLowerCase().includes(searchQuery.toLowerCase())
+    const filteredRegions = regions.filter((region) =>
+        region.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    const sortedCompanies = [...filteredCompanies].sort((a, b) => {
+    const sortedRegions = [...filteredRegions].sort((a, b) => {
         const valA = a[sortKey]?.toLowerCase?.() || "";
         const valB = b[sortKey]?.toLowerCase?.() || "";
         return sortOrder === "asc"
@@ -59,24 +58,24 @@ function Regions() {
             : valB.localeCompare(valA);
     });
 
-    const groupedCompanies = sortedCompanies.reduce((acc, company) => {
-        const owner = company.owner || "Unknown";
-        if (!acc[owner]) acc[owner] = [];
-        acc[owner].push(company);
+    const groupedRegions = sortedRegions.reduce((acc, region) => {
+        const company = region.company || "Unknown";
+        if (!acc[company]) acc[company] = [];
+        acc[company].push(region);
         return acc;
     }, {});
 
 
 
-    // Load and parse companies
+    // Load and parse regions
     useEffect(() => {
-        api.get("/api/companies/")
+        api.get("/api/regions/")
             .then((res) => {
-                const parsedCompanies = res.data.map((company) => {
+                const parsedRegions = res.data.map((region) => {
                     let lat = null, lng = null;
 
-                    if (company.center && company.center.includes("POINT")) {
-                        const wkt = company.center.replace("SRID=4326;", "").trim();
+                    if (region.center && region.center.includes("POINT")) {
+                        const wkt = region.center.replace("SRID=4326;", "").trim();
                         const match = wkt.match(/POINT\s*\(([-\d.]+)\s+([-\d.]+)\)/);
                         if (match) {
                             lng = parseFloat(match[1]);
@@ -85,14 +84,14 @@ function Regions() {
                     }
 
                     return {
-                        ...company,
+                        ...region,
                         location: lat && lng ? { lat, lng } : null
                     };
                 });
 
-                setCompanies(parsedCompanies);
+                setRegions(parsedRegions);
             })
-            .catch((err) => console.error("Failed to load companies", err));
+            .catch((err) => console.error("Failed to load regions", err));
     }, []);
 
     // Initialize map once
@@ -107,16 +106,16 @@ function Regions() {
         }
     }, []);
 
-    // Once companies are loaded, add all pins
+    // Once regions are loaded, add all pins
     useEffect(() => {
-        if (mapRef.current && companies.length) {
-            companies.forEach((company) => {
+        if (mapRef.current && regions.length) {
+            regions.forEach((region) => {
                 if (
-                    company.location &&
-                    company.id &&
-                    !markersRef.current[company.id]
+                    region.location &&
+                    region.id &&
+                    !markersRef.current[region.id]
                 ) {
-                    const { lat, lng } = company.location;
+                    const { lat, lng } = region.location;
 
                     const customIcon = L.icon({
                         iconUrl: "/marker-icon.png",      // public path
@@ -129,22 +128,22 @@ function Regions() {
 
                     const marker = L.marker([lat, lng], { icon: customIcon })
                         .addTo(mapRef.current)
-                        .bindTooltip((company.name + " - " + company.owner), {
+                        .bindTooltip(`${region.name} - ${region.company}`, {
                             permanent: false,
                             direction: "top",
-                            className: "company-tooltip"
+                            className: "model-tooltip"
                         });
 
-                    markersRef.current[company.id] = marker;
+                    markersRef.current[region.id] = marker;
                 }
             });
         }
-    }, [companies]);
+    }, [regions]);
 
-    const handleCompanyClick = (company) => {
-        setSelectedCompany(company);
-        if (company.location && mapRef.current) {
-            const { lat, lng } = company.location;
+    const handleRegionClick = (region) => {
+        setSelectedRegion(region);
+        if (region.location && mapRef.current) {
+            const { lat, lng } = region.location;
             mapRef.current.setView([lat, lng], 13);
         }
     };
@@ -153,11 +152,11 @@ function Regions() {
         <ModelAndMapLayout
             leftPanel={
                 <>
-                    {companyToDelete && (
+                    {regionToDelete && (
                         <WarningBox
-                            message={`Are you sure you want to delete "${companyToDelete.name}"?`}
+                            message={`Are you sure you want to delete "${regionToDelete.name}"?`}
                             onConfirm={confirmDelete}
-                            onCancel={() => setCompanyToDelete(null)}
+                            onCancel={() => setRegionToDelete(null)}
                         />
                     )}
 
@@ -165,7 +164,7 @@ function Regions() {
                         <div className="model-list">
                             <div className="model-header">
                                 <div className="model-header-top">
-                                    <h2>Companies</h2>
+                                    <h2>Regions</h2>
 
                                     <div className="sort-controls">
                                         <label htmlFor="sort-select">Sort:</label>
@@ -175,7 +174,7 @@ function Regions() {
                                             onChange={(e) => setSortKey(e.target.value)}
                                         >
                                             <option value="name">Name</option>
-                                            <option value="owner">Owner</option>
+                                            <option value="company">Company</option>
                                         </select>
                                         <button
                                             className="sort-arrow"
@@ -192,7 +191,7 @@ function Regions() {
                                     <div className="search-input-wrapper">
                                         <input
                                             type="text"
-                                            placeholder="Search by company name..."
+                                            placeholder="Search by region name..."
                                             value={searchQuery}
                                             onChange={(e) => setSearchQuery(e.target.value)}
                                         />
@@ -202,7 +201,7 @@ function Regions() {
                                             </button>
                                         )}
                                     </div>
-                                    <Link to="/dashboard/companies/add" className="add-model-button">
+                                    <Link to="/dashboard/regions/add" className="add-model-button">
                                         + Add
                                     </Link>
                                 </div>
@@ -210,33 +209,33 @@ function Regions() {
 
                             <div className="model-list-content">
                                 <div className="model-boxes">
-                                    {Object.entries(groupedCompanies).map(([owner, companiesInGroup]) => (
-                                        <div key={owner} className="model-group">
+                                    {Object.entries(groupedRegions).map(([company, regionsInGroup]) => (
+                                        <div key={company} className="model-group">
                                             <div
                                                 className="model-group-header"
-                                                onClick={() => toggleOwnerGroup(owner)}
+                                                onClick={() => toggleCompanyGroup(company)}
                                             >
-                                                <strong>{owner}</strong>
-                                                <span className="collapse-icon">{expandedOwners[owner] ? "−" : "+"}</span>
+                                                <strong>{company}</strong>
+                                                <span className="collapse-icon">{expandedCompanies[company] ? "−" : "+"}</span>
                                             </div>
 
-                                            {expandedOwners[owner] && (
+                                            {expandedCompanies[company] && (
                                                 <div className="model-group-boxes">
-                                                    {companiesInGroup.map((company) => (
+                                                    {regionsInGroup.map((region) => (
                                                         <div
-                                                            key={company.id}
+                                                            key={region.id}
                                                             className="model-box"
-                                                            onClick={() => handleCompanyClick(company)}
+                                                            onClick={() => handleRegionClick(region)}
                                                         >
                                                             <div className="model-box-top">
-                                                                <h3>{company.name}</h3>
+                                                                <h3>{region.name}</h3>
                                                                 <div className="model-actions">
-                                                                    <Link to={`/dashboard/companies/${company.id}/edit`}>
+                                                                    <Link to={`/dashboard/regions/${region.id}/edit`}>
                                                                         <FaEdit className="action-icon edit" />
                                                                     </Link>
                                                                     <button
                                                                         className="action-icon delete"
-                                                                        onClick={(e) => handleDeleteRequest(e, company)}
+                                                                        onClick={(e) => handleDeleteRequest(e, region)}
                                                                     >
                                                                         <FaTrash />
                                                                     </button>

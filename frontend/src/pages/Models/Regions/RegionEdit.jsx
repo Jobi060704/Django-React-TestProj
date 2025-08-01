@@ -11,21 +11,21 @@ function RegionEdit() {
     const [initialData, setInitialData] = useState(null);
 
     useEffect(() => {
-        api.get(`/api/companies/${id}/`)
+        api.get(`/api/regions/${id}/`)
             .then((res) => setInitialData(res.data))
             .catch((err) => {
-                console.error("Failed to load company", err);
-                alert("Failed to load company.");
-                navigate("/dashboard/companies");
+                console.error("Failed to load region", err);
+                alert("Failed to load region.");
+                navigate("/dashboard/regions");
             });
     }, [id, navigate]);
 
     const handleUpdate = (formData) => {
-        api.put(`/api/companies/${id}/`, { id: parseInt(id), ...formData })
-            .then(() => navigate("/dashboard/companies"))
+        api.put(`/api/regions/${id}/`, { id: parseInt(id), ...formData })
+            .then(() => navigate("/dashboard/regions"))
             .catch((err) => {
-                console.error("Failed to update company", err);
-                alert("Failed to update company.");
+                console.error("Failed to update region", err);
+                alert("Failed to update region.");
             });
     };
 
@@ -35,10 +35,10 @@ function RegionEdit() {
         <ModelAndMapLayout
             leftPanel={
                 <ModelForm
-                    modelName="Company"
+                    modelName="Region"
                     initialData={initialData}
                     onSubmit={handleUpdate}
-                    onCancel={() => navigate("/dashboard/companies")}
+                    onCancel={() => navigate("/dashboard/regions")}
                 />
             }
             rightPanel={<div id="model-map" className="model-map" />}
