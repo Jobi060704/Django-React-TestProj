@@ -787,14 +787,16 @@ class Command(BaseCommand):
         company = Company.objects.create(
             name="Karabakh Crops LLC",
             owner=user,
-            center="SRID=4326;POINT(46.5 39.82)"
+            center="SRID=4326;POINT(46.5 39.82)",
+            color=random_color()
         )
 
         # Create region
         region = Region.objects.create(
             company=company,
             name="Beylagan",
-            center="SRID=4326;POINT(47.5 39.82)"
+            center="SRID=4326;POINT(47.5 39.82)",
+            color=random_color()
         )
 
         # Create sectors with random colors
