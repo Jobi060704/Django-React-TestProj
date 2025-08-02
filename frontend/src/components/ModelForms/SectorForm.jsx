@@ -1,144 +1,128 @@
 import { useState, useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import "leaflet-draw/dist/leaflet.draw.css";
+import "leaflet-draw"; // Ensure leaflet-draw is installed
+
 import api from "../../api.js";
 import "../../styles/ModelAndMapLayout.css";
 
-function SectorForm({ initialData = {}, onSubmit, onCancel }) {
-    const [name, setName] = useState(initialData.name || "");
-    const [shape, setShape] = useState(initialData.shape || "");
-    const [regionId, setRegionId] = useState(initialData.region_id || "");
+function SectorForm({ onSubmit, onCancel }) {
+    const [name, setName] = useState("");
+    const [totalWater, setTotalWater] = useState(0);
+    const [shape, setShape] = useState("");
+    const [color, setColor] = useState("#0000FF");
+    const [regionId, setRegionId] = useState("");
     const [regions, setRegions] = useState([]);
-    const [isDrawing, setIsDrawing] = useState(false);
 
     const mapRef = useRef(null);
-    const polygonRef = useRef(null);
-    const drawnLatLngs = useRef([]);
+    const drawnLayerRef = useRef(null);
 
     useEffect(() => {
         api.get("/api/regions/")
-            .then((res) => setRegions(res.data))
-            .catch((err) => console.error("Failed to fetch regions", err));
+            .then(res => setRegions(res.data))
+            .catch(err => console.error("Failed to load regions", err));
     }, []);
 
     useEffect(() => {
         if (!mapRef.current) {
-            mapRef.current = L.map("model-map").setView([40.4, 49.8], 6);
+            const map = L.map("model-map").setView([40.4, 49.8], 5);
+            mapRef.current = map;
 
             L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
                 maxZoom: 19,
                 attribution: "© ArcGIS"
-            }).addTo(mapRef.current);
+            }).addTo(map);
 
-            mapRef.current.on("click", (e) => {
-                if (!isDrawing) return;
+            const drawnItems = new L.FeatureGroup();
+            map.addLayer(drawnItems);
 
-                drawnLatLngs.current.push([e.latlng.lng, e.latlng.lat]);
-
-                if (polygonRef.current) {
-                    polygonRef.current.setLatLngs([drawnLatLngs.current.map(([lng, lat]) => [lat, lng])]);
-                } else {
-                    polygonRef.current = L.polygon(
-                        drawnLatLngs.current.map(([lng, lat]) => [lat, lng]),
-                        { color: "blue" }
-                    ).addTo(mapRef.current);
+            const drawControl = new L.Control.Draw({
+                draw: {
+                    polygon: true,
+                    marker: false,
+                    circle: false,
+                    rectangle: false,
+                    polyline: false,
+                    circlemarker: false
+                },
+                edit: {
+                    featureGroup: drawnItems
                 }
             });
+
+            map.addControl(drawControl);
+
+            map.on(L.Draw.Event.CREATED, function (e) {
+                if (drawnLayerRef.current) {
+                    drawnItems.removeLayer(drawnLayerRef.current);
+                }
+                const layer = e.layer;
+                drawnItems.addLayer(layer);
+                drawnLayerRef.current = layer;
+
+                const latlngs = layer.getLatLngs()[0];
+                const wkt = `SRID=4326;POLYGON((${latlngs.map(p => `${p.lng} ${p.lat}`).join(", ")}))`;
+                setShape(wkt);
+            });
         }
-    }, [isDrawing]);
-
-    const convertToWKT = () => {
-        if (drawnLatLngs.current.length < 3) return "";
-        const coords = [...drawnLatLngs.current, drawnLatLngs.current[0]]; // close loop
-        const coordString = coords.map(([lng, lat]) => `${lng} ${lat}`).join(", ");
-        return `SRID=4326;POLYGON((${coordString}))`;
-    };
-
-    const handleDrawFinish = () => {
-        const wkt = convertToWKT();
-        if (wkt) setShape(wkt);
-        setIsDrawing(false);
-    };
+    }, []);
 
     const handleSubmit = (e) => {
         e.preventDefault();
         onSubmit({
             name,
+            total_water_requirement: totalWater,
             shape,
-            region_id: regionId
+            region_id: regionId,
+            color
         });
     };
 
     return (
         <div className="model-list">
-            <h2>{initialData.id ? "Edit Sector" : "Add Sector"}</h2>
+            <h2>Add Waterway Sector</h2>
             <form onSubmit={handleSubmit} className="model-form">
                 <label>
-                    Sector Name:
+                    Name:
+                    <input type="text" value={name} onChange={e => setName(e.target.value)} required />
+                </label>
+
+                <label>
+                    Total Water Requirement:
                     <input
-                        type="text"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
+                        type="number"
+                        value={totalWater}
+                        onChange={e => setTotalWater(parseFloat(e.target.value))}
+                        step="0.01"
                         required
                     />
                 </label>
 
                 <label>
                     Region:
-                    <select
-                        value={regionId}
-                        onChange={(e) => setRegionId(e.target.value)}
-                        required
-                    >
+                    <select value={regionId} onChange={e => setRegionId(e.target.value)} required>
                         <option value="">-- Select a Region --</option>
                         {regions.map((r) => (
-                            <option key={r.id} value={r.id}>
-                                {r.name} ({r.company})
-                            </option>
+                            <option key={r.id} value={r.id}>{r.name}</option>
                         ))}
                     </select>
                 </label>
 
                 <label>
+                    Color:
+                    <input type="color" value={color} onChange={e => setColor(e.target.value)} />
+                </label>
+
+                <label>
                     Shape:
-                    <input
-                        type="text"
-                        value={shape}
-                        readOnly
-                        placeholder="Click map to draw polygon"
-                    />
-                    <button
-                        type="button"
-                        className="pick-center-button"
-                        onClick={() => {
-                            drawnLatLngs.current = [];
-                            if (polygonRef.current) {
-                                mapRef.current.removeLayer(polygonRef.current);
-                                polygonRef.current = null;
-                            }
-                            setIsDrawing(true);
-                        }}
-                    >
-                        Draw Polygon
-                    </button>
-                    {isDrawing && (
-                        <button
-                            type="button"
-                            className="finish-draw-button"
-                            onClick={handleDrawFinish}
-                        >
-                            Finish Drawing
-                        </button>
-                    )}
+                    <textarea value={shape} readOnly placeholder="Draw a polygon on the map..." rows={4} />
+                    <p style={{ fontSize: "0.8rem", color: "#666" }}>Draw a polygon using the map tools</p>
                 </label>
 
                 <div className="form-buttons">
-                    <button type="submit" className="submit-button">
-                        {initialData.id ? "Save Changes" : "Create"}
-                    </button>
-                    <button type="button" onClick={onCancel} className="cancel-button">
-                        Cancel
-                    </button>
+                    <button type="submit" className="submit-button">Create</button>
+                    <button type="button" onClick={onCancel} className="cancel-button">Cancel</button>
                 </div>
             </form>
         </div>
