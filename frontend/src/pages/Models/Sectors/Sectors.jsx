@@ -242,7 +242,8 @@ function Sectors() {
                                                                 </div>
                                                             </div>
                                                             <p>{sector.pivot_count} pivots</p>
-                                                            <p>{sector.total_pivot_area?.toFixed(2)} ha</p>
+                                                            <p>{sector.area_ha?.toFixed(2)} ha</p>
+                                                            <p>{sector.total_pivot_area?.toFixed(2)} pivot ha</p>
                                                         </div>
                                                     ))}
                                                 </div>

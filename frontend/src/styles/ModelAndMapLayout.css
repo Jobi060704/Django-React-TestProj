@@ -21,6 +21,10 @@
     width: 100%;
 }
 
+#model-map {
+    height: 600px;
+}
+
 
 
 .model-container {
