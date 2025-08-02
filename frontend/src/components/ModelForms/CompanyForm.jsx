@@ -24,7 +24,7 @@ function CompanyForm({ initialData = {}, onSubmit, onCancel, modelName = "Compan
             className: "custom-colored-icon",
             html: `
                 <svg width="24" height="40" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 0C6 0 0 6 0 12c0 7.5 12 27 12 27s12-19.5 12-27c0-6-6-12-12-12z" fill="${hexColor}" stroke="#333" stroke-width="1"/>
+                    <path d="M12 0C6 0 0 6 0 12c0 7.5 12 27 12 27s12-19.5 12-27c0-6-6-12-12-12z" fill="${hexColor}" stroke="black" stroke-width="1.5"/>
                     <circle cx="12" cy="12" r="4" fill="white"/>
                 </svg>
             `,
