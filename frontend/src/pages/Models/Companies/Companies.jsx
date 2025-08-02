@@ -1,12 +1,12 @@
 import { useEffect, useState, useRef } from "react";
-import {Link} from "react-router-dom";
+import { Link } from "react-router-dom";
 import api from "../../../api.js";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import markerIcon from "leaflet/dist/images/marker-icon.png";
-import markerShadow from "leaflet/dist/images/marker-shadow.png";
+import "leaflet-draw/dist/leaflet.draw.css";
+import "leaflet-draw";
 import "../../../styles/ModelAndMapLayout.css";
-import {FaEdit, FaTrash} from "react-icons/fa";
+import { FaEdit, FaTrash } from "react-icons/fa";
 import WarningBox from "../../../components/WarningBox.jsx";
 import ModelAndMapLayout from "../../../components/ModelAndMapLayout.jsx";
 
@@ -14,7 +14,7 @@ function Companies() {
     const [companies, setCompanies] = useState([]);
     const [selectedCompany, setSelectedCompany] = useState(null);
     const mapRef = useRef(null);
-    const markersRef = useRef({});  // Store markers by company ID
+    const markersRef = useRef({});
     const [sortKey, setSortKey] = useState("name");
     const [sortOrder, setSortOrder] = useState("asc");
     const [searchQuery, setSearchQuery] = useState("");
@@ -36,18 +36,17 @@ function Companies() {
     const confirmDelete = () => {
         api.delete(`/api/companies/${companyToDelete.id}/`)
             .then(() => {
-                setCompanies((prev) => prev.filter(c => c.id !== companyToDelete.id));
+                setCompanies(prev => prev.filter(c => c.id !== companyToDelete.id));
                 setCompanyToDelete(null);
             })
-            .catch((err) => {
+            .catch(err => {
                 console.error("Failed to delete company", err);
                 alert("Failed to delete company.");
                 setCompanyToDelete(null);
             });
     };
 
-
-    const filteredCompanies = companies.filter((company) =>
+    const filteredCompanies = companies.filter(company =>
         company.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
@@ -66,15 +65,25 @@ function Companies() {
         return acc;
     }, {});
 
+    const createColoredIcon = (hexColor) =>
+        L.divIcon({
+            className: "custom-colored-icon",
+            html: `
+                <svg width="24" height="40" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 0C6 0 0 6 0 12c0 7.5 12 27 12 27s12-19.5 12-27c0-6-6-12-12-12z" fill="${hexColor}" stroke="#333" stroke-width="1"/>
+                    <circle cx="12" cy="12" r="4" fill="white"/>
+                </svg>
+            `,
+            iconSize: [24, 40],
+            iconAnchor: [12, 40],
+            popupAnchor: [0, -40]
+        });
 
-
-    // Load and parse companies
     useEffect(() => {
         api.get("/api/companies/")
-            .then((res) => {
-                const parsedCompanies = res.data.map((company) => {
+            .then(res => {
+                const parsedCompanies = res.data.map(company => {
                     let lat = null, lng = null;
-
                     if (company.center && company.center.includes("POINT")) {
                         const wkt = company.center.replace("SRID=4326;", "").trim();
                         const match = wkt.match(/POINT\s*\(([-\d.]+)\s+([-\d.]+)\)/);
@@ -83,53 +92,37 @@ function Companies() {
                             lat = parseFloat(match[2]);
                         }
                     }
-
                     return {
                         ...company,
                         location: lat && lng ? { lat, lng } : null
                     };
                 });
-
                 setCompanies(parsedCompanies);
             })
-            .catch((err) => console.error("Failed to load companies", err));
+            .catch(err => console.error("Failed to load companies", err));
     }, []);
 
-    // Initialize map once
     useEffect(() => {
         if (!mapRef.current) {
-            mapRef.current = L.map("map").setView([40.4, 49.8], 3);
+            const map = L.map("map").setView([40.4, 49.8], 3);
+            mapRef.current = map;
 
             L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
                 maxZoom: 19,
                 attribution: "© ArcGIS"
-            }).addTo(mapRef.current);
+            }).addTo(map);
         }
     }, []);
 
-    // Once companies are loaded, add all pins
     useEffect(() => {
         if (mapRef.current && companies.length) {
-            companies.forEach((company) => {
-                if (
-                    company.location &&
-                    company.id &&
-                    !markersRef.current[company.id]
-                ) {
+            companies.forEach(company => {
+                if (company.location && company.id && !markersRef.current[company.id]) {
                     const { lat, lng } = company.location;
-
-                    const customIcon = L.icon({
-                        iconUrl: "/marker-icon.png",      // public path
-                        shadowUrl: "/marker-shadow.png",
-                        iconSize: [25, 41],
-                        iconAnchor: [12, 41],
-                        popupAnchor: [1, -34],
-                        shadowSize: [41, 41],
-                    });
-
-                    const marker = L.marker([lat, lng], { icon: customIcon })
+                    const icon = createColoredIcon(company.color || "#007bff");
+                    const marker = L.marker([lat, lng], { icon })
                         .addTo(mapRef.current)
-                        .bindTooltip((company.name + " - " + company.owner), {
+                        .bindTooltip(`${company.name} - ${company.owner}`, {
                             permanent: false,
                             direction: "top",
                             className: "model-tooltip"
@@ -257,7 +250,6 @@ function Companies() {
             rightPanel={<div id="map" className="model-map" />}
         />
     );
-
 }
 
 export default Companies;
