@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import api from "../../../api.js";
-import CompanyForm from "../../../components/CompanyForm.jsx";
+import CompanyForm from "../../../components/ModelForms/CompanyForm.jsx";
 import ModelAndMapLayout from "../../../components/ModelAndMapLayout.jsx";
 import "../../../styles/ModelAndMapLayout.css";
 

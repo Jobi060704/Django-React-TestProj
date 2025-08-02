@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import api from "../api";
-import "../styles/ModelAndMapLayout.css";
+import api from "../../api.js";
+import "../../styles/ModelAndMapLayout.css";
 
 function RegionForm({ initialData = {}, onSubmit, onCancel }) {
     const [name, setName] = useState(initialData.name || "");

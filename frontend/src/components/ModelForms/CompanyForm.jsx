@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import "../styles/ModelAndMapLayout.css";
+import "../../styles/ModelAndMapLayout.css";
 
 function CompanyForm({ initialData = {}, onSubmit, onCancel, modelName = "Item" }) {
     const [name, setName] = useState(initialData.name || "");
