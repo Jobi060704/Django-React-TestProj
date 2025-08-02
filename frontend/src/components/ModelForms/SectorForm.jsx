@@ -2,20 +2,21 @@ import { useState, useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet-draw/dist/leaflet.draw.css";
-import "leaflet-draw"; // Ensure leaflet-draw is installed
+import "leaflet-draw";
 
 import api from "../../api.js";
 import "../../styles/ModelAndMapLayout.css";
 
-function SectorForm({ onSubmit, onCancel }) {
-    const [name, setName] = useState("");
-    const [totalWater, setTotalWater] = useState(0);
-    const [shape, setShape] = useState("");
-    const [color, setColor] = useState("#0000FF");
-    const [regionId, setRegionId] = useState("");
+function SectorForm({ initialData = {}, onSubmit, onCancel }) {
+    const [name, setName] = useState(initialData.name || "");
+    const [totalWater, setTotalWater] = useState(initialData.total_water_requirement || 0);
+    const [shape, setShape] = useState(initialData.shape || "");
+    const [color, setColor] = useState(initialData.color || "#0000FF");
+    const [regionId, setRegionId] = useState(initialData.region_id || "");
     const [regions, setRegions] = useState([]);
 
     const mapRef = useRef(null);
+    const drawnItemsRef = useRef(null);
     const drawnLayerRef = useRef(null);
 
     useEffect(() => {
@@ -35,6 +36,7 @@ function SectorForm({ onSubmit, onCancel }) {
             }).addTo(map);
 
             const drawnItems = new L.FeatureGroup();
+            drawnItemsRef.current = drawnItems;
             map.addLayer(drawnItems);
 
             const drawControl = new L.Control.Draw({
@@ -68,8 +70,36 @@ function SectorForm({ onSubmit, onCancel }) {
                 const wkt = `SRID=4326;POLYGON((${latlngs.map(p => `${p.lng} ${p.lat}`).join(", ")}))`;
                 setShape(wkt);
             });
+
+            // Preload existing shape if editing
+            if (initialData.shape && initialData.shape.includes("POLYGON")) {
+                const match = initialData.shape.replace("SRID=4326;", "").match(/POLYGON\s*\(\((.+)\)\)/);
+                if (match) {
+                    const latlngs = match[1].split(",").map(pair => {
+                        const [lng, lat] = pair.trim().split(" ").map(Number);
+                        return [lat, lng];
+                    });
+                    const polygon = L.polygon(latlngs, {
+                        color: color,
+                        fillColor: color,
+                        fillOpacity: 0.4
+                    }).addTo(drawnItems);
+                    map.fitBounds(polygon.getBounds());
+                    drawnLayerRef.current = polygon;
+                }
+            }
         }
-    }, []);
+    }, [initialData.shape]);
+
+    useEffect(() => {
+        if (drawnLayerRef.current) {
+            drawnLayerRef.current.setStyle({
+                color: color,
+                fillColor: color,
+                fillOpacity: 0.4
+            });
+        }
+    }, [color]);
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -82,20 +112,9 @@ function SectorForm({ onSubmit, onCancel }) {
         });
     };
 
-    useEffect(() => {
-        if (drawnLayerRef.current) {
-            drawnLayerRef.current.setStyle({
-                color: color,
-                fillColor: color,
-                fillOpacity: 0.4,
-            });
-        }
-    }, [color]);
-
-
     return (
         <div className="model-list">
-            <h2>Add Waterway Sector</h2>
+            <h2>{initialData.id ? "Edit Waterway Sector" : "Add Waterway Sector"}</h2>
             <form onSubmit={handleSubmit} className="model-form">
                 <label>
                     Name:
@@ -130,7 +149,9 @@ function SectorForm({ onSubmit, onCancel }) {
                             type="color"
                             value={color}
                             onChange={e => setColor(e.target.value)}
+                            className="color-picker-input"
                         />
+                        <span className="color-indicator" style={{ backgroundColor: color }} />
                     </div>
                 </label>
 
@@ -140,7 +161,7 @@ function SectorForm({ onSubmit, onCancel }) {
                 </label>
 
                 <div className="form-buttons">
-                    <button type="submit" className="submit-button">Create</button>
+                    <button type="submit" className="submit-button">{initialData.id ? "Save Changes" : "Create"}</button>
                     <button type="button" onClick={onCancel} className="cancel-button">Cancel</button>
                 </div>
             </form>

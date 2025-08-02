@@ -1,48 +1,54 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import api from "../../../api.js";
-import RegionForm from "../../../components/ModelForms/RegionForm.jsx";
+import SectorForm from "../../../components/ModelForms/SectorForm.jsx";
 import ModelAndMapLayout from "../../../components/ModelAndMapLayout.jsx";
 import "../../../styles/ModelAndMapLayout.css";
 
-function RegionEdit() {
+function SectorEdit() {
     const { id } = useParams();
     const navigate = useNavigate();
     const [initialData, setInitialData] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        api.get(`/api/regions/${id}/`)
-            .then((res) => setInitialData(res.data))
+        api.get(`/api/sectors/${id}/`)
+            .then((res) => {
+                setInitialData(res.data);
+                setLoading(false);
+            })
             .catch((err) => {
-                console.error("Failed to load region", err);
-                alert("Failed to load region.");
-                navigate("/dashboard/regions");
+                console.error("Failed to load sector", err);
+                alert("Failed to load sector.");
+                navigate("/dashboard/sectors");
             });
     }, [id, navigate]);
 
     const handleUpdate = (formData) => {
-        api.put(`/api/regions/${id}/`, { id: parseInt(id), ...formData })
-            .then(() => navigate("/dashboard/regions"))
+        api.put(`/api/sectors/${id}/`, formData)
+            .then(() => navigate("/dashboard/sectors"))
             .catch((err) => {
-                console.error("Failed to update region", err);
-                alert("Failed to update region.");
+                console.error("Failed to update sector", err);
+                alert("Failed to update sector.");
             });
     };
-
-    if (!initialData) return <p>Loading...</p>;
 
     return (
         <ModelAndMapLayout
             leftPanel={
-                <RegionForm
-                    initialData={initialData}
-                    onSubmit={handleUpdate}
-                    onCancel={() => navigate("/dashboard/regions")}
-                />
+                loading ? (
+                    <p>Loading sector...</p>
+                ) : (
+                    <SectorForm
+                        initialData={initialData}
+                        onSubmit={handleUpdate}
+                        onCancel={() => navigate("/dashboard/sectors")}
+                    />
+                )
             }
             rightPanel={<div id="model-map" className="model-map" />}
         />
     );
 }
 
-export default RegionEdit;
+export default SectorEdit;
