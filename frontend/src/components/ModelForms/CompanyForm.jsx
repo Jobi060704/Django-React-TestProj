@@ -1,23 +1,37 @@
 import { useState, useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import "leaflet-draw";
 import "leaflet-draw/dist/leaflet.draw.css";
+import "leaflet-draw";
 import "../../styles/ModelAndMapLayout.css";
 
-function CompanyForm({ initialData = {}, onSubmit, onCancel, modelName = "Item" }) {
+function CompanyForm({ initialData = {}, onSubmit, onCancel, modelName = "Company" }) {
     const [name, setName] = useState(initialData.name || "");
     const [center, setCenter] = useState(initialData.center || "");
-    const [color, setColor] = useState(initialData.color || "#0000ff");
+    const [color, setColor] = useState(initialData.color || "#fff200");
     const [isPicking, setIsPicking] = useState(false);
 
-    const isPickingRef = useRef(false);
     const mapRef = useRef(null);
     const markerRef = useRef(null);
+    const isPickingRef = useRef(false);
 
     useEffect(() => {
         isPickingRef.current = isPicking;
     }, [isPicking]);
+
+    const createColoredIcon = (hexColor) =>
+        L.divIcon({
+            className: "custom-colored-icon",
+            html: `
+                <svg width="24" height="40" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 0C6 0 0 6 0 12c0 7.5 12 27 12 27s12-19.5 12-27c0-6-6-12-12-12z" fill="${hexColor}" stroke="#333" stroke-width="1"/>
+                    <circle cx="12" cy="12" r="4" fill="white"/>
+                </svg>
+            `,
+            iconSize: [24, 40],
+            iconAnchor: [12, 40],
+            popupAnchor: [0, -40]
+        });
 
     useEffect(() => {
         if (!mapRef.current) {
@@ -36,45 +50,58 @@ function CompanyForm({ initialData = {}, onSubmit, onCancel, modelName = "Item" 
                 draw: {
                     marker: true,
                     polygon: false,
-                    polyline: false,
-                    rectangle: false,
                     circle: false,
+                    rectangle: false,
+                    polyline: false,
                     circlemarker: false
                 },
-                edit: {
-                    featureGroup: drawnItems
-                }
+                edit: { featureGroup: drawnItems }
             });
-
             map.addControl(drawControl);
 
-            map.on(L.Draw.Event.CREATED, function (e) {
-                drawnItems.clearLayers();
-                const marker = e.layer;
-                drawnItems.addLayer(marker);
-                const { lat, lng } = marker.getLatLng();
-                setCenter(`SRID=4326;POINT(${lng} ${lat})`);
+            map.on(L.Draw.Event.CREATED, (e) => {
+                if (markerRef.current) {
+                    drawnItems.removeLayer(markerRef.current);
+                }
+                const layer = e.layer;
+                const { lat, lng } = layer.getLatLng();
+                const wkt = `SRID=4326;POINT(${lng} ${lat})`;
+                setCenter(wkt);
+
+                const coloredMarker = L.marker([lat, lng], {
+                    icon: createColoredIcon(color)
+                }).addTo(map);
+                drawnItems.addLayer(coloredMarker);
+                markerRef.current = coloredMarker;
             });
 
+            // Preload marker from center WKT
             if (initialData.center && initialData.center.includes("POINT")) {
-                const wkt = initialData.center.replace("SRID=4326;", "").trim();
-                const match = wkt.match(/POINT\s*\(([-\d.]+)\s+([-\d.]+)\)/);
+                const match = initialData.center.replace("SRID=4326;", "").match(/POINT\s*\(([-\d.]+)\s+([-\d.]+)\)/);
                 if (match) {
-                    const lng = parseFloat(match[1]);
-                    const lat = parseFloat(match[2]);
-                    const latlng = L.latLng(lat, lng);
+                    const latlng = L.latLng(parseFloat(match[2]), parseFloat(match[1]));
                     map.setView(latlng, 10);
-                    const icon = L.divIcon({
-                        className: "",
-                        iconAnchor: [12, 41],
-                        popupAnchor: [1, -34],
-                        html: `<span style="background-color: ${color}; width: 1.2rem; height: 1.2rem; display: block; left: -0.6rem; top: -0.6rem; position: relative; border-radius: 50% 50% 0; transform: rotate(45deg); border: 1px solid #ffffffaa;"></span>`
-                    });
-                    markerRef.current = L.marker(latlng, { icon }).addTo(map);
+                    const marker = L.marker(latlng, {
+                        icon: createColoredIcon(color)
+                    }).addTo(map);
+                    markerRef.current = marker;
                 }
             }
         }
-    }, [initialData.center, color]);
+    }, []);
+
+    // Update marker color live when color changes
+    useEffect(() => {
+        if (markerRef.current && center) {
+            const match = center.replace("SRID=4326;", "").match(/POINT\s*\(([-\d.]+)\s+([-\d.]+)\)/);
+            if (match) {
+                const latlng = L.latLng(parseFloat(match[2]), parseFloat(match[1]));
+                const newMarker = L.marker(latlng, { icon: createColoredIcon(color) }).addTo(mapRef.current);
+                mapRef.current.removeLayer(markerRef.current);
+                markerRef.current = newMarker;
+            }
+        }
+    }, [color]);
 
     const handleSubmit = (e) => {
         e.preventDefault();
