@@ -37,7 +37,7 @@ class CompanySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Company
-        fields = ["id", "name", "owner", "center"]
+        fields = ["id", "name", "owner", "center", 'color']
 
     def create(self, validated_data):
         validated_data["owner"] = self.context["request"].user
@@ -58,7 +58,7 @@ class RegionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Region
-        fields = ["id", "name", "center", "company", "company_id"]
+        fields = ["id", "name", "center", "company", "company_id", 'color']
 
     def validate_company(self, company):
         if company.owner != self.context["request"].user:

@@ -137,7 +137,6 @@ function SectorForm({ onSubmit, onCancel }) {
                 <label>
                     Shape:
                     <textarea value={shape} readOnly placeholder="Draw a polygon on the map..." rows={4} />
-                    <p style={{ fontSize: "0.8rem", color: "#666" }}>Draw a polygon using the map tools</p>
                 </label>
 
                 <div className="form-buttons">

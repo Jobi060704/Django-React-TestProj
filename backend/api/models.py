@@ -18,6 +18,8 @@ class Company(models.Model):
     name = models.CharField(max_length=100, unique=True)  # Required (so remove null/blank)
     center = models.CharField(max_length=1000, null=True, blank=True)  # WKT POINT
 
+    color = models.CharField(max_length=7, default="#0000FF")
+
     def __str__(self):
         return self.name
 
@@ -26,6 +28,8 @@ class Region(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='regions')
     name = models.CharField(max_length=100)  # Required
     center = models.CharField(max_length=1000, null=True, blank=True)  # WKT POINT
+
+    color = models.CharField(max_length=7, default="#0000FF")
 
     def __str__(self):
         return f"{self.name} ({self.company.name})"

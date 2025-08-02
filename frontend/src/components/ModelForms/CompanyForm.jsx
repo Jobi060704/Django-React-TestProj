@@ -1,26 +1,19 @@
 import { useState, useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import "leaflet-draw";
+import "leaflet-draw/dist/leaflet.draw.css";
 import "../../styles/ModelAndMapLayout.css";
 
 function CompanyForm({ initialData = {}, onSubmit, onCancel, modelName = "Item" }) {
     const [name, setName] = useState(initialData.name || "");
     const [center, setCenter] = useState(initialData.center || "");
+    const [color, setColor] = useState(initialData.color || "#0000ff");
     const [isPicking, setIsPicking] = useState(false);
 
     const isPickingRef = useRef(false);
     const mapRef = useRef(null);
     const markerRef = useRef(null);
-
-    const customIcon = L.icon({
-        iconUrl: "/marker-icon.png",
-        shadowUrl: "/marker-shadow.png",
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
-        popupAnchor: [1, -34],
-        shadowSize: [41, 41],
-    });
-
 
     useEffect(() => {
         isPickingRef.current = isPicking;
@@ -28,26 +21,39 @@ function CompanyForm({ initialData = {}, onSubmit, onCancel, modelName = "Item" 
 
     useEffect(() => {
         if (!mapRef.current) {
-            mapRef.current = L.map("model-map").setView([40.4, 49.8], 5);
+            const map = L.map("model-map").setView([40.4, 49.8], 5);
+            mapRef.current = map;
 
             L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
                 maxZoom: 19,
                 attribution: "© ArcGIS"
-            }).addTo(mapRef.current);
+            }).addTo(map);
 
-            mapRef.current.on("click", (e) => {
-                if (!isPickingRef.current) return;
+            const drawnItems = new L.FeatureGroup();
+            map.addLayer(drawnItems);
 
-                const { lat, lng } = e.latlng;
-                const wkt = `SRID=4326;POINT(${lng} ${lat})`;
-                setCenter(wkt);
-                setIsPicking(false);
-
-                if (markerRef.current) {
-                    markerRef.current.setLatLng(e.latlng);
-                } else {
-                    markerRef.current = L.marker(e.latlng, { icon: customIcon }).addTo(mapRef.current);
+            const drawControl = new L.Control.Draw({
+                draw: {
+                    marker: true,
+                    polygon: false,
+                    polyline: false,
+                    rectangle: false,
+                    circle: false,
+                    circlemarker: false
+                },
+                edit: {
+                    featureGroup: drawnItems
                 }
+            });
+
+            map.addControl(drawControl);
+
+            map.on(L.Draw.Event.CREATED, function (e) {
+                drawnItems.clearLayers();
+                const marker = e.layer;
+                drawnItems.addLayer(marker);
+                const { lat, lng } = marker.getLatLng();
+                setCenter(`SRID=4326;POINT(${lng} ${lat})`);
             });
 
             if (initialData.center && initialData.center.includes("POINT")) {
@@ -57,16 +63,22 @@ function CompanyForm({ initialData = {}, onSubmit, onCancel, modelName = "Item" 
                     const lng = parseFloat(match[1]);
                     const lat = parseFloat(match[2]);
                     const latlng = L.latLng(lat, lng);
-                    mapRef.current.setView(latlng, 10);
-                    markerRef.current = L.marker(latlng, { icon: customIcon }).addTo(mapRef.current);
+                    map.setView(latlng, 10);
+                    const icon = L.divIcon({
+                        className: "",
+                        iconAnchor: [12, 41],
+                        popupAnchor: [1, -34],
+                        html: `<span style="background-color: ${color}; width: 1.2rem; height: 1.2rem; display: block; left: -0.6rem; top: -0.6rem; position: relative; border-radius: 50% 50% 0; transform: rotate(45deg); border: 1px solid #ffffffaa;"></span>`
+                    });
+                    markerRef.current = L.marker(latlng, { icon }).addTo(map);
                 }
             }
         }
-    }, [initialData.center]);
+    }, [initialData.center, color]);
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        onSubmit({ name, center });
+        onSubmit({ name, center, color });
     };
 
     return (
@@ -84,20 +96,25 @@ function CompanyForm({ initialData = {}, onSubmit, onCancel, modelName = "Item" 
                 </label>
 
                 <label>
+                    Color:
+                    <div className="color-picker-wrapper">
+                        <input
+                            type="color"
+                            value={color}
+                            onChange={(e) => setColor(e.target.value)}
+                            className="color-picker-input"
+                        />
+                    </div>
+                </label>
+
+                <label>
                     Center:
                     <input
                         type="text"
                         value={center}
                         readOnly
-                        placeholder="Click 'Pick on Map'..."
+                        placeholder="Place a marker on the map..."
                     />
-                    <button
-                        type="button"
-                        className="pick-center-button"
-                        onClick={() => setIsPicking(true)}
-                    >
-                        Pick on Map
-                    </button>
                 </label>
 
                 <div className="form-buttons">
