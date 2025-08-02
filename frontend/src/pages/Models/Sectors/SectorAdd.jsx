@@ -1,27 +1,27 @@
 import { useNavigate } from "react-router-dom";
 import api from "../../../api.js";
-import RegionForm from "../../../components/ModelForms/RegionForm.jsx";
+import SectorForm from "../../../components/ModelForms/SectorForm.jsx";
 import ModelAndMapLayout from "../../../components/ModelAndMapLayout.jsx";
 import "../../../styles/ModelAndMapLayout.css";
 
-function RegionAdd() {
+function SectorAdd() {
     const navigate = useNavigate();
 
     const handleCreate = (formData) => {
-        api.post("/api/regions/", formData)
-            .then(() => navigate("/dashboard/regions"))
+        api.post("/api/sectors/", formData)
+            .then(() => navigate("/dashboard/sectors"))
             .catch((err) => {
-                console.error("Failed to create region", err);
-                alert("Failed to create region.");
+                console.error("Failed to create sector", err);
+                alert("Failed to create sector.");
             });
     };
 
     return (
         <ModelAndMapLayout
             leftPanel={
-                <RegionForm
+                <SectorForm
                     onSubmit={handleCreate}
-                    onCancel={() => navigate("/dashboard/regions")}
+                    onCancel={() => navigate("/dashboard/sectors")}
                 />
             }
             rightPanel={<div id="model-map" className="model-map" />}
@@ -29,4 +29,4 @@ function RegionAdd() {
     );
 }
 
-export default RegionAdd;
+export default SectorAdd;
