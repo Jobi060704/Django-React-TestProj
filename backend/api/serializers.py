@@ -78,7 +78,7 @@ class WaterwaySectorSerializer(serializers.ModelSerializer):
         model = WaterwaySector
         fields = [
             "id", "name", "area_ha", "total_water_requirement", "shape",
-            "region", "region_id", "pivot_count", "total_pivot_area"
+            "region", "region_id", "pivot_count", "total_pivot_area", 'color'
         ]
         read_only_fields = ["area_ha"]
 
@@ -98,7 +98,7 @@ class CropPivotSerializer(serializers.ModelSerializer):
         model = CropPivot
         fields = [
             "id", "logical_name", "area", "crop_1", "crop_2", "crop_3", "crop_4",
-            "seeding_date", "harvest_date", "center", "radius_m", "sector", "sector_id"
+            "seeding_date", "harvest_date", "center", "radius_m", "sector", "sector_id", 'color'
         ]
         read_only_fields = ["area"]
 

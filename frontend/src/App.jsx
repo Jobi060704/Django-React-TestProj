@@ -7,11 +7,14 @@ import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import MainLayout from "./components/MainLayout";
 import Companies from "./pages/Models/Companies/Companies.jsx";
-import CompanyAdd from "./pages/Models/Companies/CompanyAdd.jsx"; // ✅ Import layout wrapper
+import CompanyAdd from "./pages/Models/Companies/CompanyAdd.jsx";
 import CompanyEdit from "./pages/Models/Companies/CompanyEdit.jsx";
 import Regions from "./pages/Models/Regions/Regions.jsx";
 import RegionAdd from "./pages/Models/Regions/RegionAdd.jsx";
-import RegionEdit from "./pages/Models/Regions/RegionEdit.jsx"; // ✅ Import layout wrapper
+import RegionEdit from "./pages/Models/Regions/RegionEdit.jsx";
+import Sectors from "./pages/Models/Sectors/Sectors.jsx";
+import SectorAdd from "./pages/Models/Sectors/SectorAdd.jsx";
+import SectorEdit from "./pages/Models/Sectors/SectorEdit.jsx";
 
 function Logout() {
     localStorage.clear();
@@ -37,6 +40,10 @@ function App() {
                 <Route path="/dashboard/regions" element={<ProtectedRoute> <MainLayout> <Regions /> </MainLayout> </ProtectedRoute>} />
                 <Route path="/dashboard/regions/add" element={<ProtectedRoute> <MainLayout> <RegionAdd /> </MainLayout> </ProtectedRoute>} />
                 <Route path="/dashboard/regions/:id/edit" element={<ProtectedRoute> <MainLayout> <RegionEdit /> </MainLayout> </ProtectedRoute>} />
+
+                <Route path="/dashboard/sectors" element={<ProtectedRoute> <MainLayout> <Sectors /> </MainLayout> </ProtectedRoute>} />
+                <Route path="/dashboard/sectors/add" element={<ProtectedRoute> <MainLayout> <SectorAdd /> </MainLayout> </ProtectedRoute>} />
+                <Route path="/dashboard/sectors/:id/edit" element={<ProtectedRoute> <MainLayout> <SectorEdit /> </MainLayout> </ProtectedRoute>} />
 
 
                 <Route path="/login" element={<Login />} />

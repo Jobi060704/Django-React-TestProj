@@ -10,47 +10,47 @@ import {FaEdit, FaTrash} from "react-icons/fa";
 import WarningBox from "../../../components/WarningBox.jsx";
 import ModelAndMapLayout from "../../../components/ModelAndMapLayout.jsx";
 
-function Regions() {
-    const [regions, setRegions] = useState([]);
-    const [selectedRegion, setSelectedRegion] = useState(null);
-    const mapRef = useRef(null);
-    const markersRef = useRef({});  // Store markers by company ID
+function Sectors() {
+    const [sectors, setSectors] = useState([]);
+    const [selectedSector, setSelectedSector] = useState(null);
+    const [sectorToDelete, setSectorToDelete] = useState(null);
+    const [searchQuery, setSearchQuery] = useState("");
     const [sortKey, setSortKey] = useState("name");
     const [sortOrder, setSortOrder] = useState("asc");
-    const [searchQuery, setSearchQuery] = useState("");
-    const [regionToDelete, setRegionToDelete] = useState(null);
-    const [expandedCompanies, setExpandedCompanies] = useState({});
+    const [expandedRegions, setExpandedRegions] = useState({});
+    const mapRef = useRef(null);
+    const polygonsRef = useRef({}); // sector.id -> polygon
 
-    const toggleCompanyGroup = (company) => {
-        setExpandedCompanies(prev => ({
+    const toggleRegionGroup = (region) => {
+        setExpandedRegions((prev) => ({
             ...prev,
-            [company]: !prev[company]
+            [region]: !prev[region],
         }));
     };
 
-    const handleDeleteRequest = (e, region) => {
+    const handleDeleteRequest = (e, sector) => {
         e.stopPropagation();
-        setRegionToDelete(region);
+        setSectorToDelete(sector);
     };
 
     const confirmDelete = () => {
-        api.delete(`/api/regions/${regionToDelete.id}/`)
+        api.delete(`/api/sectors/${sectorToDelete.id}/`)
             .then(() => {
-                setRegions((prev) => prev.filter(r => r.id !== regionToDelete.id));
-                setRegionToDelete(null);
+                setSectors((prev) => prev.filter((s) => s.id !== sectorToDelete.id));
+                setSectorToDelete(null);
             })
             .catch((err) => {
-                console.error("Failed to delete region", err);
-                alert("Failed to delete region.");
-                setRegionToDelete(null);
+                console.error("Failed to delete sector", err);
+                alert("Failed to delete sector.");
+                setSectorToDelete(null);
             });
     };
 
-    const filteredRegions = regions.filter((region) =>
-        region.name.toLowerCase().includes(searchQuery.toLowerCase())
+    const filteredSectors = sectors.filter((s) =>
+        s.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    const sortedRegions = [...filteredRegions].sort((a, b) => {
+    const sortedSectors = [...filteredSectors].sort((a, b) => {
         const valA = a[sortKey]?.toLowerCase?.() || "";
         const valB = b[sortKey]?.toLowerCase?.() || "";
         return sortOrder === "asc"
@@ -58,93 +58,91 @@ function Regions() {
             : valB.localeCompare(valA);
     });
 
-    const groupedRegions = sortedRegions.reduce((acc, region) => {
-        const company = region.company || "Unknown";
-        if (!acc[company]) acc[company] = [];
-        acc[company].push(region);
+    const groupedSectors = sortedSectors.reduce((acc, sector) => {
+        const region = sector.region || "Unknown";
+        if (!acc[region]) acc[region] = [];
+        acc[region].push(sector);
         return acc;
     }, {});
 
-
-
-    // Load and parse regions
+    // Load & parse sectors
     useEffect(() => {
-        api.get("/api/regions/")
+        api.get("/api/sectors/")
             .then((res) => {
-                const parsedRegions = res.data.map((region) => {
-                    let lat = null, lng = null;
+                const parsed = res.data.map((sector) => {
+                    let polygonCoords = [];
 
-                    if (region.center && region.center.includes("POINT")) {
-                        const wkt = region.center.replace("SRID=4326;", "").trim();
-                        const match = wkt.match(/POINT\s*\(([-\d.]+)\s+([-\d.]+)\)/);
+                    if (sector.shape && sector.shape.includes("POLYGON")) {
+                        const wkt = sector.shape.replace("SRID=4326;", "").trim();
+                        const match = wkt.match(/POLYGON\s*\(\((.+?)\)\)/);
+
                         if (match) {
-                            lng = parseFloat(match[1]);
-                            lat = parseFloat(match[2]);
+                            polygonCoords = match[1].split(",").map((coord) => {
+                                const [lng, lat] = coord.trim().split(" ").map(Number);
+                                return [lat, lng];
+                            });
                         }
                     }
 
                     return {
-                        ...region,
-                        location: lat && lng ? { lat, lng } : null
+                        ...sector,
+                        polygonCoords,
                     };
                 });
 
-                setRegions(parsedRegions);
+                setSectors(parsed);
             })
-            .catch((err) => console.error("Failed to load regions", err));
+            .catch((err) => console.error("Failed to load sectors", err));
     }, []);
 
-    // Initialize map once
+    // Setup map once
     useEffect(() => {
         if (!mapRef.current) {
             mapRef.current = L.map("map").setView([40.4, 49.8], 3);
 
             L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
                 maxZoom: 19,
-                attribution: "© ArcGIS"
+                attribution: "© ArcGIS",
             }).addTo(mapRef.current);
         }
     }, []);
 
-    // Once regions are loaded, add all pins
+    // Draw polygons
     useEffect(() => {
-        if (mapRef.current && regions.length) {
-            regions.forEach((region) => {
-                if (
-                    region.location &&
-                    region.id &&
-                    !markersRef.current[region.id]
-                ) {
-                    const { lat, lng } = region.location;
+        if (mapRef.current) {
+            // Clear old
+            Object.values(polygonsRef.current).forEach((polygon) => {
+                mapRef.current.removeLayer(polygon);
+            });
+            polygonsRef.current = {};
 
-                    const customIcon = L.icon({
-                        iconUrl: "/marker-icon.png",      // public path
-                        shadowUrl: "/marker-shadow.png",
-                        iconSize: [25, 41],
-                        iconAnchor: [12, 41],
-                        popupAnchor: [1, -34],
-                        shadowSize: [41, 41],
-                    });
-
-                    const marker = L.marker([lat, lng], { icon: customIcon })
+            // Draw new
+            sectors.forEach((sector) => {
+                if (sector.polygonCoords?.length > 2) {
+                    const polygon = L.polygon(sector.polygonCoords, {
+                        color: sector.color || "#3388ff",
+                        fillOpacity: 0.5,
+                        weight: 2,
+                    })
                         .addTo(mapRef.current)
-                        .bindTooltip(`${region.name} - ${region.company}`, {
+                        .bindTooltip(`${sector.name} (${sector.region})`, {
                             permanent: false,
                             direction: "top",
-                            className: "model-tooltip"
+                            className: "model-tooltip",
                         });
 
-                    markersRef.current[region.id] = marker;
+                    polygonsRef.current[sector.id] = polygon;
                 }
             });
         }
-    }, [regions]);
+    }, [sectors]);
 
-    const handleRegionClick = (region) => {
-        setSelectedRegion(region);
-        if (region.location && mapRef.current) {
-            const { lat, lng } = region.location;
-            mapRef.current.setView([lat, lng], 13);
+    const handleSectorClick = (sector) => {
+        setSelectedSector(sector);
+
+        const polygon = polygonsRef.current[sector.id];
+        if (polygon && mapRef.current) {
+            mapRef.current.fitBounds(polygon.getBounds(), { padding: [20, 20] });
         }
     };
 
@@ -152,11 +150,11 @@ function Regions() {
         <ModelAndMapLayout
             leftPanel={
                 <>
-                    {regionToDelete && (
+                    {sectorToDelete && (
                         <WarningBox
-                            message={`Are you sure you want to delete "${regionToDelete.name}"?`}
+                            message={`Are you sure you want to delete "${sectorToDelete.name}"?`}
                             onConfirm={confirmDelete}
-                            onCancel={() => setRegionToDelete(null)}
+                            onCancel={() => setSectorToDelete(null)}
                         />
                     )}
 
@@ -164,7 +162,7 @@ function Regions() {
                         <div className="model-list">
                             <div className="model-header">
                                 <div className="model-header-top">
-                                    <h2>Regions</h2>
+                                    <h2>Sectors</h2>
 
                                     <div className="sort-controls">
                                         <label htmlFor="sort-select">Sort:</label>
@@ -174,7 +172,7 @@ function Regions() {
                                             onChange={(e) => setSortKey(e.target.value)}
                                         >
                                             <option value="name">Name</option>
-                                            <option value="company">Company</option>
+                                            <option value="region">Region</option>
                                         </select>
                                         <button
                                             className="sort-arrow"
@@ -191,7 +189,7 @@ function Regions() {
                                     <div className="search-input-wrapper">
                                         <input
                                             type="text"
-                                            placeholder="Search by region name..."
+                                            placeholder="Search by sector name..."
                                             value={searchQuery}
                                             onChange={(e) => setSearchQuery(e.target.value)}
                                         />
@@ -201,7 +199,7 @@ function Regions() {
                                             </button>
                                         )}
                                     </div>
-                                    <Link to="/dashboard/regions/add" className="add-model-button">
+                                    <Link to="/dashboard/sectors/add" className="add-model-button">
                                         + Add
                                     </Link>
                                 </div>
@@ -209,38 +207,42 @@ function Regions() {
 
                             <div className="model-list-content">
                                 <div className="model-boxes">
-                                    {Object.entries(groupedRegions).map(([company, regionsInGroup]) => (
-                                        <div key={company} className="model-group">
+                                    {Object.entries(groupedSectors).map(([region, group]) => (
+                                        <div key={region} className="model-group">
                                             <div
                                                 className="model-group-header"
-                                                onClick={() => toggleCompanyGroup(company)}
+                                                onClick={() => toggleRegionGroup(region)}
                                             >
-                                                <strong>{company}</strong>
-                                                <span className="collapse-icon">{expandedCompanies[company] ? "−" : "+"}</span>
+                                                <strong>{region}</strong>
+                                                <span className="collapse-icon">
+                                                    {expandedRegions[region] ? "−" : "+"}
+                                                </span>
                                             </div>
 
-                                            {expandedCompanies[company] && (
+                                            {expandedRegions[region] && (
                                                 <div className="model-group-boxes">
-                                                    {regionsInGroup.map((region) => (
+                                                    {group.map((sector) => (
                                                         <div
-                                                            key={region.id}
+                                                            key={sector.id}
                                                             className="model-box"
-                                                            onClick={() => handleRegionClick(region)}
+                                                            onClick={() => handleSectorClick(sector)}
                                                         >
                                                             <div className="model-box-top">
-                                                                <h3>{region.name}</h3>
+                                                                <h3>{sector.name}</h3>
                                                                 <div className="model-actions">
-                                                                    <Link to={`/dashboard/regions/${region.id}/edit`}>
+                                                                    <Link to={`/dashboard/sectors/${sector.id}/edit`}>
                                                                         <FaEdit className="action-icon edit" />
                                                                     </Link>
                                                                     <button
                                                                         className="action-icon delete"
-                                                                        onClick={(e) => handleDeleteRequest(e, region)}
+                                                                        onClick={(e) => handleDeleteRequest(e, sector)}
                                                                     >
                                                                         <FaTrash />
                                                                     </button>
                                                                 </div>
                                                             </div>
+                                                            <p>{sector.pivot_count} pivots</p>
+                                                            <p>{sector.total_pivot_area?.toFixed(2)} ha</p>
                                                         </div>
                                                     ))}
                                                 </div>
@@ -256,7 +258,6 @@ function Regions() {
             rightPanel={<div id="map" className="model-map" />}
         />
     );
-
 }
 
-export default Regions;
+export default Sectors;
