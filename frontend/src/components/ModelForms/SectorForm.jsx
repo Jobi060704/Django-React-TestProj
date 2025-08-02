@@ -71,6 +71,19 @@ function SectorForm({ initialData = {}, onSubmit, onCancel }) {
                 setShape(wkt);
             });
 
+            map.on(L.Draw.Event.EDITED, function (e) {
+                const layers = e.layers;
+                layers.eachLayer((layer) => {
+                    if (layer instanceof L.Polygon) {
+                        const latlngs = layer.getLatLngs()[0];
+                        const updatedWKT = `SRID=4326;POLYGON((${latlngs.map(p => `${p.lng} ${p.lat}`).join(", ")}))`;
+                        setShape(updatedWKT);
+                        drawnLayerRef.current = layer;
+                    }
+                });
+            });
+
+
             // Preload existing shape if editing
             if (initialData.shape && initialData.shape.includes("POLYGON")) {
                 const match = initialData.shape.replace("SRID=4326;", "").match(/POLYGON\s*\(\((.+)\)\)/);
