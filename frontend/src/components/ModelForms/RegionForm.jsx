@@ -7,8 +7,13 @@ import "../../styles/ModelAndMapLayout.css";
 function RegionForm({ initialData = {}, onSubmit, onCancel }) {
     const [name, setName] = useState(initialData.name || "");
     const [center, setCenter] = useState(initialData.center || "");
-    const [companyId, setCompanyId] = useState("");
+    const [companyId, setCompanyId] = useState(initialData.company_id || "");
     const [companies, setCompanies] = useState([]);
+    const [isPicking, setIsPicking] = useState(false);
+
+    const isPickingRef = useRef(false);
+    const mapRef = useRef(null);
+    const markerRef = useRef(null);
 
     const customIcon = L.icon({
         iconUrl: "/marker-icon.png",
@@ -18,30 +23,6 @@ function RegionForm({ initialData = {}, onSubmit, onCancel }) {
         popupAnchor: [1, -34],
         shadowSize: [41, 41],
     });
-
-
-    useEffect(() => {
-        api.get("/api/companies/")
-            .then((res) => {
-                setCompanies(res.data);
-
-                // Match by name if we have initialData.company as string
-                if (initialData.company) {
-                    const matchedCompany = res.data.find(
-                        (c) => c.name === initialData.company
-                    );
-                    if (matchedCompany) {
-                        setCompanyId(matchedCompany.id);
-                    }
-                }
-            })
-            .catch((err) => console.error("Failed to load companies", err));
-    }, [initialData.company]);
-    const [isPicking, setIsPicking] = useState(false);
-
-    const isPickingRef = useRef(false);
-    const mapRef = useRef(null);
-    const markerRef = useRef(null);
 
     useEffect(() => {
         isPickingRef.current = isPicking;
