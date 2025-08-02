@@ -381,3 +381,30 @@
     font-size: 1.2rem;
     margin-left: 0.5rem;
 }
+
+
+
+.color-picker-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 4px;
+}
+
+.color-picker-wrapper input[type="color"] {
+    appearance: none;
+    width: 40px;
+    height: 40px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 0;
+    cursor: pointer;
+    background-color: transparent;
+}
+
+.color-preview {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 1px solid #999;
+}

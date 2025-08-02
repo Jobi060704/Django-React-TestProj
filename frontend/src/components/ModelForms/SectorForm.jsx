@@ -58,6 +58,9 @@ function SectorForm({ onSubmit, onCancel }) {
                     drawnItems.removeLayer(drawnLayerRef.current);
                 }
                 const layer = e.layer;
+
+                layer.setStyle({ color: color, fillColor: color, fillOpacity: 0.4 });
+
                 drawnItems.addLayer(layer);
                 drawnLayerRef.current = layer;
 
@@ -78,6 +81,17 @@ function SectorForm({ onSubmit, onCancel }) {
             color
         });
     };
+
+    useEffect(() => {
+        if (drawnLayerRef.current) {
+            drawnLayerRef.current.setStyle({
+                color: color,
+                fillColor: color,
+                fillOpacity: 0.4,
+            });
+        }
+    }, [color]);
+
 
     return (
         <div className="model-list">
@@ -111,7 +125,13 @@ function SectorForm({ onSubmit, onCancel }) {
 
                 <label>
                     Color:
-                    <input type="color" value={color} onChange={e => setColor(e.target.value)} />
+                    <div className="color-picker-wrapper">
+                        <input
+                            type="color"
+                            value={color}
+                            onChange={e => setColor(e.target.value)}
+                        />
+                    </div>
                 </label>
 
                 <label>
