@@ -37,6 +37,14 @@ function Companies() {
         api.delete(`/api/companies/${companyToDelete.id}/`)
             .then(() => {
                 setCompanies(prev => prev.filter(c => c.id !== companyToDelete.id));
+
+                // Remove marker from map
+                const marker = markersRef.current[companyToDelete.id];
+                if (marker && mapRef.current) {
+                    mapRef.current.removeLayer(marker);
+                    delete markersRef.current[companyToDelete.id];
+                }
+
                 setCompanyToDelete(null);
             })
             .catch(err => {

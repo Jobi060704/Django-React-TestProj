@@ -37,6 +37,14 @@ function Regions() {
         api.delete(`/api/regions/${regionToDelete.id}/`)
             .then(() => {
                 setRegions(prev => prev.filter(r => r.id !== regionToDelete.id));
+
+                // Remove marker from map and ref
+                const marker = markersRef.current[regionToDelete.id];
+                if (marker && mapRef.current) {
+                    mapRef.current.removeLayer(marker);
+                    delete markersRef.current[regionToDelete.id];
+                }
+
                 setRegionToDelete(null);
             })
             .catch(err => {
