@@ -146,6 +146,37 @@ function Sectors() {
         }
     };
 
+    function getMiniSectorSVG(polygonCoords, color = "#888") {
+        if (!polygonCoords || polygonCoords.length < 3) return null;
+
+        const lats = polygonCoords.map(([lat]) => lat);
+        const lngs = polygonCoords.map(([, lng]) => lng);
+        const minLat = Math.min(...lats);
+        const maxLat = Math.max(...lats);
+        const minLng = Math.min(...lngs);
+        const maxLng = Math.max(...lngs);
+
+        const points = polygonCoords
+            .map(([lat, lng]) => {
+                const scaleLat = (lat - minLat) / (maxLat - minLat || 1);
+                const scaleLng = (lng - minLng) / (maxLng - minLng || 1);
+                return `${scaleLng * 90 + 5},${90 - scaleLat * 90 + 5}`;
+            })
+            .join(" ");
+
+        return (
+            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" className="mini-sector-svg">
+                <polygon
+                    points={points}
+                    fill={color}
+                    stroke="black"
+                    strokeWidth="2"
+                />
+            </svg>
+        );
+    }
+
+
     return (
         <ModelAndMapLayout
             leftPanel={
@@ -228,7 +259,12 @@ function Sectors() {
                                                             onClick={() => handleSectorClick(sector)}
                                                         >
                                                             <div className="model-box-top">
-                                                                <h3>{sector.name}</h3>
+                                                                <h3>
+                                                                    <span className="model-box-mini-shape">
+                                                                        {getMiniSectorSVG(sector.polygonCoords, sector.color)}
+                                                                    </span>
+                                                                    {sector.name}
+                                                                </h3>
                                                                 <div className="model-actions">
                                                                     <Link to={`/dashboard/sectors/${sector.id}/edit`}>
                                                                         <FaEdit className="action-icon edit" />

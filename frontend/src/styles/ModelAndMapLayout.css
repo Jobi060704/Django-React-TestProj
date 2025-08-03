@@ -421,3 +421,23 @@
 }
 
 
+
+
+
+.model-box-mini-shape {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;         /* same width as .model-box-marker */
+    height: 16px;        /* shorter height for better text alignment */
+    margin-right: 6px;   /* slightly smaller spacing */
+    vertical-align: middle;
+    flex-shrink: 0;
+}
+
+.model-box-mini-shape svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
