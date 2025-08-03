@@ -1,31 +1,31 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import api from "../../../api.js";
-import RegionForm from "../../../components/ModelForms/RegionForm.jsx";
+import PivotForm from "../../../components/ModelForms/PivotForm.jsx";
 import ModelAndMapLayout from "../../../components/ModelAndMapLayout.jsx";
 import "../../../styles/ModelAndMapLayout.css";
 
-function RegionEdit() {
+function PivotEdit() {
     const { id } = useParams();
     const navigate = useNavigate();
     const [initialData, setInitialData] = useState(null);
 
     useEffect(() => {
-        api.get(`/api/regions/${id}/`)
+        api.get(`/api/pivots/${id}/`)
             .then((res) => setInitialData(res.data))
             .catch((err) => {
-                console.error("Failed to load region", err);
-                alert("Failed to load region.");
-                navigate("/dashboard/regions");
+                console.error("Failed to load pivot", err);
+                alert("Failed to load pivot.");
+                navigate("/dashboard/pivots");
             });
     }, [id, navigate]);
 
     const handleUpdate = (formData) => {
-        api.put(`/api/regions/${id}/`, { id: parseInt(id), ...formData })
-            .then(() => navigate("/dashboard/regions"))
+        api.put(`/api/pivots/${id}/`, { id: parseInt(id), ...formData })
+            .then(() => navigate("/dashboard/pivots"))
             .catch((err) => {
-                console.error("Failed to update region", err);
-                alert("Failed to update region.");
+                console.error("Failed to update pivot", err);
+                alert("Failed to update pivot.");
             });
     };
 
@@ -34,10 +34,10 @@ function RegionEdit() {
     return (
         <ModelAndMapLayout
             leftPanel={
-                <RegionForm
+                <PivotForm
                     initialData={initialData}
                     onSubmit={handleUpdate}
-                    onCancel={() => navigate("/dashboard/regions")}
+                    onCancel={() => navigate("/dashboard/pivots")}
                 />
             }
             rightPanel={<div id="model-map" className="model-map" />}
@@ -45,4 +45,4 @@ function RegionEdit() {
     );
 }
 
-export default RegionEdit;
+export default PivotEdit;

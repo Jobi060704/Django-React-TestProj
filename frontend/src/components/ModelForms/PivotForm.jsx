@@ -6,40 +6,25 @@ import "leaflet-draw";
 import api from "../../api.js";
 import "../../styles/ModelAndMapLayout.css";
 
-function RegionForm({ initialData = {}, onSubmit, onCancel }) {
-    const [name, setName] = useState(initialData.name || "");
+function PivotForm({ initialData = {}, onSubmit, onCancel }) {
+    const [logicalName, setLogicalName] = useState(initialData.logical_name || "");
     const [center, setCenter] = useState(initialData.center || "");
-    const [companyId, setCompanyId] = useState(initialData.company_id || "");
+    const [radius, setRadius] = useState(initialData.radius_m || 500);
+    const [sectorId, setSectorId] = useState(initialData.sector_id || "");
     const [color, setColor] = useState(initialData.color || "#FF0000");
-    const [companies, setCompanies] = useState([]);
+    const [area, setArea] = useState(initialData.area || 0);
+    const [sectors, setSectors] = useState([]);
 
     const mapRef = useRef(null);
-    const markerRef = useRef(null);
+    const circleRef = useRef(null);
     const drawnItemsRef = useRef(null);
 
-    // Colored Leaflet icon
-    const createColoredIcon = (hexColor) =>
-        L.divIcon({
-            className: "custom-colored-icon",
-            html: `
-                <svg width="24" height="40" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 0C6 0 0 6 0 12c0 7.5 12 27 12 27s12-19.5 12-27c0-6-6-12-12-12z" fill="${hexColor}" stroke="black" stroke-width="1.5"/>
-                    <circle cx="12" cy="12" r="4" fill="white"/>
-                </svg>
-            `,
-            iconSize: [24, 40],
-            iconAnchor: [12, 40],
-            popupAnchor: [0, -40]
-        });
-
-    // Load companies
     useEffect(() => {
-        api.get("/api/companies/")
-            .then(res => setCompanies(res.data))
-            .catch(err => console.error("Failed to fetch companies", err));
+        api.get("/api/sectors/")
+            .then(res => setSectors(res.data))
+            .catch(err => console.error("Failed to fetch sectors", err));
     }, []);
 
-    // Init map and draw toolbar
     useEffect(() => {
         if (!mapRef.current) {
             const map = L.map("model-map").setView([40.4, 49.8], 5);
@@ -56,96 +41,101 @@ function RegionForm({ initialData = {}, onSubmit, onCancel }) {
 
             const drawControl = new L.Control.Draw({
                 draw: {
-                    marker: true,
+                    circle: true,
+                    marker: false,
                     polygon: false,
                     polyline: false,
                     rectangle: false,
-                    circle: false,
                     circlemarker: false
                 },
                 edit: { featureGroup: drawnItems }
             });
             map.addControl(drawControl);
 
-            // Handle marker placement
             map.on(L.Draw.Event.CREATED, function (e) {
-                if (markerRef.current) {
-                    drawnItems.removeLayer(markerRef.current);
+                if (circleRef.current) {
+                    drawnItems.removeLayer(circleRef.current);
                 }
 
                 const layer = e.layer;
-                const { lat, lng } = layer.getLatLng();
-                const wkt = `SRID=4326;POINT(${lng} ${lat})`;
-                setCenter(wkt);
+                const centerLatLng = layer.getLatLng();
+                const radiusM = layer.getRadius();
+                const wkt = `SRID=4326;POINT(${centerLatLng.lng} ${centerLatLng.lat})`;
+                const calculatedArea = (Math.PI * Math.pow(radiusM, 2)) / 10000;
 
-                const coloredMarker = L.marker([lat, lng], {
-                    icon: createColoredIcon(color)
+
+                setArea(parseFloat(calculatedArea.toFixed(2)));
+
+
+                setCenter(wkt);
+                setRadius(Math.round(radiusM));
+
+                const circle = L.circle(centerLatLng, {
+                    radius: radiusM,
+                    color: color
                 }).addTo(map);
-                drawnItems.addLayer(coloredMarker);
-                markerRef.current = coloredMarker;
+
+                drawnItems.addLayer(circle);
+                circleRef.current = circle;
             });
 
-            // Preload existing marker if editing
             if (initialData.center && initialData.center.includes("POINT")) {
-                const match = initialData.center.replace("SRID=4326;", "").match(/POINT\s*\(([-\d.]+)\s+([-\d.]+)\)/);
+                const match = initialData.center.replace("SRID=4326;", "").match(/POINT\s*\(([-\d.]+)\s+([\-\d.]+)\)/);
                 if (match) {
                     const latlng = L.latLng(parseFloat(match[2]), parseFloat(match[1]));
-                    map.setView(latlng, 10);
-                    const marker = L.marker(latlng, {
-                        icon: createColoredIcon(color)
+                    const circle = L.circle(latlng, {
+                        radius: radius,
+                        color: color
                     }).addTo(drawnItems);
-                    markerRef.current = marker;
-                    setCenter(initialData.center);
+                    circleRef.current = circle;
+                    map.setView(latlng, 13);
                 }
             }
         }
     }, [initialData.center]);
 
-    // Live marker color update
     useEffect(() => {
-        if (markerRef.current && center) {
-            const match = center.replace("SRID=4326;", "").match(/POINT\s*\(([-\d.]+)\s+([-\d.]+)\)/);
-            if (match) {
-                const latlng = L.latLng(parseFloat(match[2]), parseFloat(match[1]));
-                const newMarker = L.marker(latlng, { icon: createColoredIcon(color) }).addTo(mapRef.current);
-                mapRef.current.removeLayer(markerRef.current);
-                markerRef.current = newMarker;
-                drawnItemsRef.current.addLayer(newMarker);
-            }
+        if (circleRef.current) {
+            circleRef.current.setStyle({ color });
         }
     }, [color]);
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        onSubmit({ name, center, company_id: companyId, color });
+        onSubmit({
+            logical_name: logicalName,
+            center,
+            radius_m: radius,
+            sector_id: sectorId,
+            color,
+            area_ha: area,
+        });
     };
 
     return (
         <div className="model-list">
-            <h2>{initialData.id ? "Edit Region" : "Add Region"}</h2>
+            <h2>{initialData.id ? "Edit Pivot" : "Add Pivot"}</h2>
             <form onSubmit={handleSubmit} className="model-form">
                 <label>
-                    Region Name:
+                    Pivot Name:
                     <input
                         type="text"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
+                        value={logicalName}
+                        onChange={(e) => setLogicalName(e.target.value)}
                         required
                     />
                 </label>
 
                 <label>
-                    Company:
+                    Sector:
                     <select
-                        value={companyId}
-                        onChange={(e) => setCompanyId(e.target.value)}
+                        value={sectorId}
+                        onChange={(e) => setSectorId(e.target.value)}
                         required
                     >
-                        <option value="">-- Select a Company --</option>
-                        {companies.map((c) => (
-                            <option key={c.id} value={c.id}>
-                                {c.name}
-                            </option>
+                        <option value="">-- Select a Sector --</option>
+                        {sectors.map((s) => (
+                            <option key={s.id} value={s.id}>{s.name}</option>
                         ))}
                     </select>
                 </label>
@@ -169,11 +159,26 @@ function RegionForm({ initialData = {}, onSubmit, onCancel }) {
                         type="text"
                         value={center}
                         readOnly
-                        placeholder="Use the map toolbar to place marker"
+                        placeholder="Use the map to draw a circle"
                     />
-                    <p style={{ fontSize: "0.8rem", color: "#666" }}>
-                        Use the marker tool on the map to set the center.
-                    </p>
+                </label>
+
+                <label>
+                    Radius (meters):
+                    <input
+                        type="number"
+                        value={radius}
+                        readOnly
+                    />
+                </label>
+
+                <label>
+                    Area (ha):
+                    <input
+                        type="number"
+                        value={area}
+                        readOnly
+                    />
                 </label>
 
                 <div className="form-buttons">
@@ -189,4 +194,4 @@ function RegionForm({ initialData = {}, onSubmit, onCancel }) {
     );
 }
 
-export default RegionForm;
+export default PivotForm;

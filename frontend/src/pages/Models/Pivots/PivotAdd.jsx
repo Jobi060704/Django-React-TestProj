@@ -1,27 +1,27 @@
 import { useNavigate } from "react-router-dom";
 import api from "../../../api.js";
-import RegionForm from "../../../components/ModelForms/RegionForm.jsx";
+import PivotForm from "../../../components/ModelForms/PivotForm.jsx";
 import ModelAndMapLayout from "../../../components/ModelAndMapLayout.jsx";
 import "../../../styles/ModelAndMapLayout.css";
 
-function RegionAdd() {
+function PivotAdd() {
     const navigate = useNavigate();
 
     const handleCreate = (formData) => {
-        api.post("/api/regions/", formData)
-            .then(() => navigate("/dashboard/regions"))
+        api.post("/api/pivots/", formData)
+            .then(() => navigate("/dashboard/pivots"))
             .catch((err) => {
-                console.error("Failed to create region", err);
-                alert("Failed to create region.");
+                console.error("Failed to create pivot", err);
+                alert("Failed to create pivot.");
             });
     };
 
     return (
         <ModelAndMapLayout
             leftPanel={
-                <RegionForm
+                <PivotForm
                     onSubmit={handleCreate}
-                    onCancel={() => navigate("/dashboard/regions")}
+                    onCancel={() => navigate("/dashboard/pivots")}
                 />
             }
             rightPanel={<div id="model-map" className="model-map" />}
@@ -29,4 +29,4 @@ function RegionAdd() {
     );
 }
 
-export default RegionAdd;
+export default PivotAdd;
