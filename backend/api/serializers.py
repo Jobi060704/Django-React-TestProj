@@ -100,7 +100,6 @@ class CropPivotSerializer(serializers.ModelSerializer):
             "id", "logical_name", "area", "crop_1", "crop_2", "crop_3", "crop_4",
             "seeding_date", "harvest_date", "center", "radius_m", "sector", "sector_id", 'color'
         ]
-        read_only_fields = ["area"]
 
     def validate_sector(self, sector):
         if sector.region.company.owner != self.context["request"].user:

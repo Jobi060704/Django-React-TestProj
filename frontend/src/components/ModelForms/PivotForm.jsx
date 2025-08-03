@@ -63,10 +63,7 @@ function PivotForm({ initialData = {}, onSubmit, onCancel }) {
                 const wkt = `SRID=4326;POINT(${centerLatLng.lng} ${centerLatLng.lat})`;
                 const calculatedArea = (Math.PI * Math.pow(radiusM, 2)) / 10000;
 
-
                 setArea(parseFloat(calculatedArea.toFixed(2)));
-
-
                 setCenter(wkt);
                 setRadius(Math.round(radiusM));
 
@@ -108,7 +105,7 @@ function PivotForm({ initialData = {}, onSubmit, onCancel }) {
             radius_m: radius,
             sector_id: sectorId,
             color,
-            area_ha: area,
+            area  // ✅ Fix: correctly named to match model
         });
     };
 
