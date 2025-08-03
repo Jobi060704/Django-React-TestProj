@@ -230,7 +230,16 @@ function Companies() {
                                                             onClick={() => handleCompanyClick(company)}
                                                         >
                                                             <div className="model-box-top">
-                                                                <h3>{company.name}</h3>
+                                                                <h3>
+                                                                <span className="model-box-marker">
+                                                                  <svg viewBox="0 0 24 40" xmlns="http://www.w3.org/2000/svg">
+                                                                    <path d="M12 0C6 0 0 6 0 12c0 7.5 12 27 12 27s12-19.5 12-27c0-6-6-12-12-12z"
+                                                                          fill={company.color} stroke="black" strokeWidth="1.5" />
+                                                                    <circle cx="12" cy="12" r="4" fill="white" />
+                                                                  </svg>
+                                                                </span>
+                                                                    {company.name}
+                                                                </h3>
                                                                 <div className="model-actions">
                                                                     <Link to={`/dashboard/companies/${company.id}/edit`}>
                                                                         <FaEdit className="action-icon edit" />
