@@ -6,94 +6,77 @@ import L from "leaflet";
 import "leaflet-draw/dist/leaflet.draw.css";
 import "leaflet-draw";
 import "../../../styles/ModelAndMapLayout.css";
-import {FaEdit, FaTrash} from "react-icons/fa";
+import { FaEdit, FaTrash } from "react-icons/fa";
 import WarningBox from "../../../components/WarningBox.jsx";
 import ModelAndMapLayout from "../../../components/ModelAndMapLayout.jsx";
 
-function Regions() {
-    const [regions, setRegions] = useState([]);
-    const [selectedRegion, setSelectedRegion] = useState(null);
-    const mapRef = useRef(null);
-    const markersRef = useRef({});
-    const [sortKey, setSortKey] = useState("name");
+function Pivots() {
+    const [pivots, setPivots] = useState([]);
+    const [pivotToDelete, setPivotToDelete] = useState(null);
+    const [selectedPivot, setSelectedPivot] = useState(null);
+    const [sortKey, setSortKey] = useState("logical_name");
     const [sortOrder, setSortOrder] = useState("asc");
     const [searchQuery, setSearchQuery] = useState("");
-    const [regionToDelete, setRegionToDelete] = useState(null);
-    const [expandedCompanies, setExpandedCompanies] = useState({});
+    const [expandedSectors, setExpandedSectors] = useState({});
+    const mapRef = useRef(null);
+    const circlesRef = useRef({});
 
-    const toggleCompanyGroup = (company) => {
-        setExpandedCompanies(prev => ({
+    const toggleSectorGroup = (sector) => {
+        setExpandedSectors(prev => ({
             ...prev,
-            [company]: !prev[company]
+            [sector]: !prev[sector]
         }));
     };
 
-    const handleDeleteRequest = (e, region) => {
+    const handleDeleteRequest = (e, pivot) => {
         e.stopPropagation();
-        setRegionToDelete(region);
+        setPivotToDelete(pivot);
     };
 
     const confirmDelete = () => {
-        api.delete(`/api/regions/${regionToDelete.id}/`)
+        api.delete(`/api/pivots/${pivotToDelete.id}/`)
             .then(() => {
-                setRegions(prev => prev.filter(r => r.id !== regionToDelete.id));
-
-                // Remove marker from map and ref
-                const marker = markersRef.current[regionToDelete.id];
-                if (marker && mapRef.current) {
-                    mapRef.current.removeLayer(marker);
-                    delete markersRef.current[regionToDelete.id];
-                }
-
-                setRegionToDelete(null);
+                setPivots(prev => prev.filter(p => p.id !== pivotToDelete.id));
+                setPivotToDelete(null);
             })
             .catch(err => {
-                console.error("Failed to delete region", err);
-                alert("Failed to delete region.");
-                setRegionToDelete(null);
+                console.error("Failed to delete pivot", err);
+                alert("Failed to delete pivot.");
+                setPivotToDelete(null);
             });
     };
 
-    const filteredRegions = regions.filter(region =>
-        region.name.toLowerCase().includes(searchQuery.toLowerCase())
+    const filteredPivots = pivots.filter(p =>
+        p.logical_name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    const sortedRegions = [...filteredRegions].sort((a, b) => {
+    const sortedPivots = [...filteredPivots].sort((a, b) => {
         const valA = a[sortKey]?.toLowerCase?.() || "";
         const valB = b[sortKey]?.toLowerCase?.() || "";
-        return sortOrder === "asc"
-            ? valA.localeCompare(valB)
-            : valB.localeCompare(valA);
+        return sortOrder === "asc" ? valA.localeCompare(valB) : valB.localeCompare(valA);
     });
 
-    const groupedRegions = sortedRegions.reduce((acc, region) => {
-        const company = region.company || "Unknown";
-        if (!acc[company]) acc[company] = [];
-        acc[company].push(region);
+    const groupedPivots = sortedPivots.reduce((acc, pivot) => {
+        const sector = pivot.sector || "Unknown";
+        if (!acc[sector]) acc[sector] = [];
+        acc[sector].push(pivot);
         return acc;
     }, {});
 
-    const createColoredIcon = (hexColor) =>
-        L.divIcon({
-            className: "custom-colored-icon",
-            html: `
-                <svg width="24" height="40" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 0C6 0 0 6 0 12c0 7.5 12 27 12 27s12-19.5 12-27c0-6-6-12-12-12z" fill="${hexColor}" stroke="black" stroke-width="1.5"/>
-                    <circle cx="12" cy="12" r="4" fill="white"/>
-                </svg>
-            `,
-            iconSize: [24, 40],
-            iconAnchor: [12, 40],
-            popupAnchor: [0, -40]
-        });
+    const createCircleIcon = (hexColor) => (
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="10" fill={hexColor} stroke="black" strokeWidth="1.5" />
+            <circle cx="12" cy="12" r="2" fill="black" />
+        </svg>
+    );
 
     useEffect(() => {
-        api.get("/api/regions/")
+        api.get("/api/pivots/")
             .then((res) => {
-                const parsedRegions = res.data.map((region) => {
+                const parsed = res.data.map((pivot) => {
                     let lat = null, lng = null;
-                    if (region.center && region.center.includes("POINT")) {
-                        const wkt = region.center.replace("SRID=4326;", "").trim();
+                    if (pivot.center && pivot.center.includes("POINT")) {
+                        const wkt = pivot.center.replace("SRID=4326;", "").trim();
                         const match = wkt.match(/POINT\s*\(([-\d.]+)\s+([-\d.]+)\)/);
                         if (match) {
                             lng = parseFloat(match[1]);
@@ -101,13 +84,13 @@ function Regions() {
                         }
                     }
                     return {
-                        ...region,
+                        ...pivot,
                         location: lat && lng ? { lat, lng } : null
                     };
                 });
-                setRegions(parsedRegions);
+                setPivots(parsed);
             })
-            .catch((err) => console.error("Failed to load regions", err));
+            .catch((err) => console.error("Failed to load pivots", err));
     }, []);
 
     useEffect(() => {
@@ -121,29 +104,35 @@ function Regions() {
     }, []);
 
     useEffect(() => {
-        if (mapRef.current && regions.length) {
-            regions.forEach((region) => {
-                if (region.location && region.id && !markersRef.current[region.id]) {
-                    const { lat, lng } = region.location;
-                    const icon = createColoredIcon(region.color || "#fff200");
-                    const marker = L.marker([lat, lng], { icon })
+        if (mapRef.current) {
+            Object.values(circlesRef.current).forEach(circle => mapRef.current.removeLayer(circle));
+            circlesRef.current = {};
+
+            pivots.forEach(pivot => {
+                if (pivot.location) {
+                    const circle = L.circle(pivot.location, {
+                        radius: pivot.radius_m,
+                        color: pivot.color || "#3388ff",
+                        fillOpacity: 0.5,
+                        weight: 2
+                    })
                         .addTo(mapRef.current)
-                        .bindTooltip(`${region.name} - ${region.company}`, {
+                        .bindTooltip(`${pivot.logical_name} (${pivot.sector})`, {
                             permanent: false,
                             direction: "top",
                             className: "model-tooltip"
                         });
-                    markersRef.current[region.id] = marker;
+
+                    circlesRef.current[pivot.id] = circle;
                 }
             });
         }
-    }, [regions]);
+    }, [pivots]);
 
-    const handleRegionClick = (region) => {
-        setSelectedRegion(region);
-        if (region.location && mapRef.current) {
-            const { lat, lng } = region.location;
-            mapRef.current.setView([lat, lng], 13);
+    const handlePivotClick = (pivot) => {
+        setSelectedPivot(pivot);
+        if (pivot.location && mapRef.current) {
+            mapRef.current.setView([pivot.location.lat, pivot.location.lng], 14);
         }
     };
 
@@ -151,11 +140,11 @@ function Regions() {
         <ModelAndMapLayout
             leftPanel={
                 <>
-                    {regionToDelete && (
+                    {pivotToDelete && (
                         <WarningBox
-                            message={`Are you sure you want to delete "${regionToDelete.name}"?`}
+                            message={`Are you sure you want to delete "${pivotToDelete.logical_name}"?`}
                             onConfirm={confirmDelete}
-                            onCancel={() => setRegionToDelete(null)}
+                            onCancel={() => setPivotToDelete(null)}
                         />
                     )}
 
@@ -163,8 +152,7 @@ function Regions() {
                         <div className="model-list">
                             <div className="model-header">
                                 <div className="model-header-top">
-                                    <h2>Regions</h2>
-
+                                    <h2>Pivots</h2>
                                     <div className="sort-controls">
                                         <label htmlFor="sort-select">Sort:</label>
                                         <select
@@ -172,8 +160,8 @@ function Regions() {
                                             value={sortKey}
                                             onChange={(e) => setSortKey(e.target.value)}
                                         >
-                                            <option value="name">Name</option>
-                                            <option value="company">Company</option>
+                                            <option value="logical_name">Name</option>
+                                            <option value="sector">Sector</option>
                                         </select>
                                         <button
                                             className="sort-arrow"
@@ -190,17 +178,15 @@ function Regions() {
                                     <div className="search-input-wrapper">
                                         <input
                                             type="text"
-                                            placeholder="Search by region name..."
+                                            placeholder="Search by name..."
                                             value={searchQuery}
                                             onChange={(e) => setSearchQuery(e.target.value)}
                                         />
                                         {searchQuery && (
-                                            <button className="clear-search" onClick={() => setSearchQuery("")}>
-                                                ✕
-                                            </button>
+                                            <button className="clear-search" onClick={() => setSearchQuery("")}>✕</button>
                                         )}
                                     </div>
-                                    <Link to="/dashboard/regions/add" className="add-model-button">
+                                    <Link to="/dashboard/pivots/add" className="add-model-button">
                                         + Add
                                     </Link>
                                 </div>
@@ -208,47 +194,45 @@ function Regions() {
 
                             <div className="model-list-content">
                                 <div className="model-boxes">
-                                    {Object.entries(groupedRegions).map(([company, regionsInGroup]) => (
-                                        <div key={company} className="model-group">
+                                    {Object.entries(groupedPivots).map(([sector, pivotsInGroup]) => (
+                                        <div key={sector} className="model-group">
                                             <div
                                                 className="model-group-header"
-                                                onClick={() => toggleCompanyGroup(company)}
+                                                onClick={() => toggleSectorGroup(sector)}
                                             >
-                                                <strong>{company}</strong>
-                                                <span className="collapse-icon">{expandedCompanies[company] ? "−" : "+"}</span>
+                                                <strong>{sector}</strong>
+                                                <span className="collapse-icon">{expandedSectors[sector] ? "−" : "+"}</span>
                                             </div>
 
-                                            {expandedCompanies[company] && (
+                                            {expandedSectors[sector] && (
                                                 <div className="model-group-boxes">
-                                                    {regionsInGroup.map((region) => (
+                                                    {pivotsInGroup.map((pivot) => (
                                                         <div
-                                                            key={region.id}
+                                                            key={pivot.id}
                                                             className="model-box"
-                                                            onClick={() => handleRegionClick(region)}
+                                                            onClick={() => handlePivotClick(pivot)}
                                                         >
                                                             <div className="model-box-top">
                                                                 <h3>
                                                                     <span className="model-box-marker">
-                                                                        <svg viewBox="0 0 24 40" xmlns="http://www.w3.org/2000/svg">
-                                                                            <path d="M12 0C6 0 0 6 0 12c0 7.5 12 27 12 27s12-19.5 12-27c0-6-6-12-12-12z"
-                                                                                  fill={region.color} stroke="black" strokeWidth="1.5" />
-                                                                            <circle cx="12" cy="12" r="4" fill="white" />
-                                                                        </svg>
+                                                                        {createCircleIcon(pivot.color)}
                                                                     </span>
-                                                                    {region.name}
+                                                                    {pivot.logical_name}
                                                                 </h3>
                                                                 <div className="model-actions">
-                                                                    <Link to={`/dashboard/regions/${region.id}/edit`}>
+                                                                    <Link to={`/dashboard/pivots/${pivot.id}/edit`}>
                                                                         <FaEdit className="action-icon edit" />
                                                                     </Link>
                                                                     <button
                                                                         className="action-icon delete"
-                                                                        onClick={(e) => handleDeleteRequest(e, region)}
+                                                                        onClick={(e) => handleDeleteRequest(e, pivot)}
                                                                     >
                                                                         <FaTrash />
                                                                     </button>
                                                                 </div>
                                                             </div>
+                                                            <p>{pivot.crop_1}{pivot.crop_2 ? ", " + pivot.crop_2 : ""}</p>
+                                                            <p>{pivot.area?.toFixed(2)} ha</p>
                                                         </div>
                                                     ))}
                                                 </div>
@@ -264,7 +248,6 @@ function Regions() {
             rightPanel={<div id="map" className="model-map" />}
         />
     );
-
 }
 
-export default Regions;
+export default Pivots;
