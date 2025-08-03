@@ -15,6 +15,9 @@ import RegionEdit from "./pages/Models/Regions/RegionEdit.jsx";
 import Sectors from "./pages/Models/Sectors/Sectors.jsx";
 import SectorAdd from "./pages/Models/Sectors/SectorAdd.jsx";
 import SectorEdit from "./pages/Models/Sectors/SectorEdit.jsx";
+import Pivots from "./pages/Models/Pivots/Pivots.jsx";
+import PivotAdd from "./pages/Models/Pivots/PivotAdd.jsx";
+import PivotEdit from "./pages/Models/Pivots/PivotEdit.jsx";
 
 function Logout() {
     localStorage.clear();
@@ -44,6 +47,10 @@ function App() {
                 <Route path="/dashboard/sectors" element={<ProtectedRoute> <MainLayout> <Sectors /> </MainLayout> </ProtectedRoute>} />
                 <Route path="/dashboard/sectors/add" element={<ProtectedRoute> <MainLayout> <SectorAdd /> </MainLayout> </ProtectedRoute>} />
                 <Route path="/dashboard/sectors/:id/edit" element={<ProtectedRoute> <MainLayout> <SectorEdit /> </MainLayout> </ProtectedRoute>} />
+
+                <Route path="/dashboard/pivots" element={<ProtectedRoute> <MainLayout> <Pivots /> </MainLayout> </ProtectedRoute>} />
+                <Route path="/dashboard/pivots/add" element={<ProtectedRoute> <MainLayout> <PivotAdd /> </MainLayout> </ProtectedRoute>} />
+                <Route path="/dashboard/pivots/:id/edit" element={<ProtectedRoute> <MainLayout> <PivotEdit /> </MainLayout> </ProtectedRoute>} />
 
 
                 <Route path="/login" element={<Login />} />
