@@ -15,9 +15,30 @@ function PivotForm({ initialData = {}, onSubmit, onCancel }) {
     const [area, setArea] = useState(initialData.area || 0);
     const [sectors, setSectors] = useState([]);
 
+    const [crop1, setCrop1] = useState(initialData.crop_1 || "none");
+    const [crop2, setCrop2] = useState(initialData.crop_2 || "none");
+    const [crop3, setCrop3] = useState(initialData.crop_3 || "none");
+    const [crop4, setCrop4] = useState(initialData.crop_4 || "none");
+    const [seedingDate, setSeedingDate] = useState(initialData.seeding_date || "");
+    const [harvestDate, setHarvestDate] = useState(initialData.harvest_date || "");
+
+    const cropOptions = [
+        { value: "none", label: "None" },
+        { value: "corn", label: "Corn" },
+        { value: "wheat", label: "Wheat" },
+        { value: "soybean", label: "Soybean" },
+        { value: "barley", label: "Barley" },
+        { value: "canola", label: "Canola" },
+        { value: "sunflower", label: "Sunflower" },
+        { value: "potato", label: "Potato" },
+    ];
+
+
     const mapRef = useRef(null);
     const circleRef = useRef(null);
     const drawnItemsRef = useRef(null);
+
+    const isDuplicateCrop = (crop, others) => crop !== "none" && others.includes(crop);
 
     useEffect(() => {
         api.get("/api/sectors/")
@@ -99,8 +120,27 @@ function PivotForm({ initialData = {}, onSubmit, onCancel }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+
+        const crops = [crop1, crop2, crop3, crop4];
+        for (let i = 1; i < crops.length; i++) {
+            if (crops[i] !== "none" && crops[i - 1] === "none") {
+                alert(`Crop ${i + 1} cannot be selected before crop ${i}`);
+                return;
+            }
+            if (isDuplicateCrop(crops[i], crops.slice(0, i))) {
+                alert(`Crop ${i + 1} duplicates an earlier crop`);
+                return;
+            }
+        }
+
         onSubmit({
             logical_name: logicalName,
+            crop_1: crop1,
+            crop_2: crop2,
+            crop_3: crop3,
+            crop_4: crop4,
+            seeding_date: seedingDate || null,
+            harvest_date: harvestDate || null,
             center,
             radius_m: radius,
             sector_id: sectorId,
@@ -177,6 +217,44 @@ function PivotForm({ initialData = {}, onSubmit, onCancel }) {
                         readOnly
                     />
                 </label>
+
+                <label>
+                    Seeding Date:
+                    <input
+                        type="date"
+                        value={seedingDate}
+                        onChange={(e) => setSeedingDate(e.target.value)}
+                    />
+                </label>
+
+                <label>
+                    Harvest Date:
+                    <input
+                        type="date"
+                        value={harvestDate}
+                        onChange={(e) => setHarvestDate(e.target.value)}
+                    />
+                </label>
+
+                {[crop1, crop2, crop3, crop4].map((crop, i) => (
+                    <label key={i}>
+                        Crop {i + 1}:
+                        <select
+                            value={crop}
+                            onChange={(e) => {
+                                const setter = [setCrop1, setCrop2, setCrop3, setCrop4][i];
+                                setter(e.target.value);
+                            }}
+                        >
+                            {cropOptions.map(opt => (
+                                <option key={opt.value} value={opt.value}>
+                                    {opt.label}
+                                </option>
+                            ))}
+                        </select>
+                    </label>
+                ))}
+
 
                 <div className="form-buttons">
                     <button type="submit" className="submit-button">

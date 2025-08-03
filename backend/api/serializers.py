@@ -120,7 +120,6 @@ class CropFieldSerializer(serializers.ModelSerializer):
             "seeding_date", "harvest_date", "center", "shape", "color",
             "sector", "sector_id"
         ]
-        read_only_fields = ["area"]
 
     def validate_sector(self, sector):
         if sector.region.company.owner != self.context["request"].user:
