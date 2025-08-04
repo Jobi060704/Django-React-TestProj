@@ -101,8 +101,10 @@ class CropField(models.Model):
 
 
 class CropRotation(models.Model):
-    pivot = models.ForeignKey(CropPivot, null=True, blank=True, on_delete=models.SET_NULL, related_name="rotations")
-    pivot_name = models.CharField(max_length=50)
+    pivot = models.ForeignKey(CropPivot, null=True, blank=True, on_delete=models.SET_NULL, related_name="pivot_rotations")
+    field = models.ForeignKey(CropField, null=True, blank=True, on_delete=models.SET_NULL, related_name="field_rotations")
+    pivot_name = models.CharField(max_length=50, null=True, blank=True)
+    field_name = models.CharField(max_length=50, null=True, blank=True)
     sector_name = models.CharField(max_length=100)
     company_name = models.CharField(max_length=100)
 
@@ -115,7 +117,7 @@ class CropRotation(models.Model):
 
     class Meta:
         ordering = ['-year']  # Sort by latest year first
-        unique_together = ('pivot', 'year', 'crop')  # Optional, if business logic allows
+        unique_together = ('pivot', 'field', 'year', 'crop')  # Optional, if business logic allows
 
     def save(self, *args, **kwargs):
         # If pivot is linked and names are empty, snapshot them
@@ -129,4 +131,4 @@ class CropRotation(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.year} – {self.crop} ({self.pivot_name})"
+        return f"{self.year} – {self.crop} ({self.pivot_name}/{self.sector_name})"

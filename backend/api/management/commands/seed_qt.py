@@ -772,6 +772,7 @@ class Command(BaseCommand):
 
         # Clear existing data
         CropRotation.objects.all().delete()
+        CropField.objects.all().delete()
         CropPivot.objects.all().delete()
         WaterwaySector.objects.all().delete()
         Region.objects.all().delete()
@@ -873,5 +874,65 @@ class Command(BaseCommand):
                     yield_tons=round(random.uniform(5.0, 15.0), 2),
                     notes=fake.sentence()
                 )
+
+        # ----------------------------
+        # Add Sector 6 with Fields only (no pivots)
+        # ----------------------------
+        sector_6_shape = "SRID=4326;POLYGON((47.518513629751226 39.82674122118996, 47.52187957929533 39.82959053457296, 47.519469865417335 39.83100046037433, 47.515836169886114 39.82779871211255, 47.518513629751226 39.82674122118996))"
+        sector_6 = WaterwaySector.objects.create(
+            region=region,
+            name="Sector 6",
+            area_ha=0,
+            total_water_requirement=0,
+            shape=sector_6_shape,
+            color=random_color()
+        )
+
+        sector_6_field_shapes = [
+            polygon_to_wkt([
+                (47.51608174170167, 39.82785785171902),
+                (47.517336544271586, 39.82727965718843),
+                (47.51923667387666, 39.82893162864971),
+                (47.51787431680066, 39.829537341565924),
+                (47.51608174170167, 39.82785785171902),
+            ]),
+            polygon_to_wkt([
+                (47.52016881292744, 39.82813318073701),
+                (47.519129119370604, 39.828683835463494),
+                (47.51751580178126, 39.82727965718843),
+                (47.51877060435021, 39.826784058004336),
+                (47.52016881292744, 39.82813318073701),
+            ]),
+            polygon_to_wkt([
+                (47.520219748157984, 39.8282511556765),
+                (47.52184601566805, 39.82971369244166),
+                (47.52071190806291, 39.83033813685603),
+                (47.519064242296594, 39.828744149076044),
+                (47.520219748157984, 39.8282511556765),
+            ]),
+            polygon_to_wkt([
+                (47.51797293120535, 39.829615095436225),
+                (47.519192631836916, 39.829007077442554),
+                (47.52060491677895, 39.83027240613211),
+                (47.519513605687706, 39.83102830565761),
+                (47.51797293120535, 39.829615095436225),
+            ]),
+        ]
+
+        for i, shape in enumerate(sector_6_field_shapes):
+            CropField.objects.create(
+                sector=sector_6,
+                logical_name=f"Field {i+1}",
+                shape=shape,
+                area=123,
+                seeding_date=fake.date_between(start_date='-2y', end_date='today'),
+                harvest_date=fake.date_between(start_date='today', end_date='+6m'),
+                crop_1=random.choice(crop_choices),
+                crop_2=random.choice(crop_choices),
+                crop_3=None,
+                crop_4=None,
+                color=random_color()
+            )
+
 
         self.stdout.write(self.style.SUCCESS("Seeder completed successfully with CropRotation data."))
