@@ -9,8 +9,7 @@ import "../../styles/ModelAndMapLayout.css";
 function FieldForm({ initialData = {}, onSubmit, onCancel }) {
     const [logicalName, setLogicalName] = useState(initialData.logical_name || "");
     const [shape, setShape] = useState(initialData.shape || "");
-    const [color, setColor] = useState(initialData.color || "#00AAFF");
-    const [area, setArea] = useState(initialData.area || 0);
+    const [color, setColor] = useState(initialData.color || "#00AA00");
     const [sectorId, setSectorId] = useState(initialData.sector_id || "");
     const [sectors, setSectors] = useState([]);
 
@@ -20,6 +19,10 @@ function FieldForm({ initialData = {}, onSubmit, onCancel }) {
     const [crop4, setCrop4] = useState(initialData.crop_4 || "none");
     const [seedingDate, setSeedingDate] = useState(initialData.seeding_date || "");
     const [harvestDate, setHarvestDate] = useState(initialData.harvest_date || "");
+
+    const mapRef = useRef(null);
+    const drawnItemsRef = useRef(null);
+    const drawnLayerRef = useRef(null);
 
     const cropOptions = [
         { value: "none", label: "None" },
@@ -32,13 +35,10 @@ function FieldForm({ initialData = {}, onSubmit, onCancel }) {
         { value: "potato", label: "Potato" },
     ];
 
-    const mapRef = useRef(null);
-    const drawnItemsRef = useRef(null);
-
     useEffect(() => {
         api.get("/api/sectors/")
             .then(res => setSectors(res.data))
-            .catch(err => console.error("Failed to fetch sectors", err));
+            .catch(err => console.error("Failed to load sectors", err));
     }, []);
 
     useEffect(() => {
@@ -60,33 +60,72 @@ function FieldForm({ initialData = {}, onSubmit, onCancel }) {
                     polygon: true,
                     marker: false,
                     circle: false,
-                    polyline: false,
                     rectangle: false,
+                    polyline: false,
                     circlemarker: false
                 },
-                edit: { featureGroup: drawnItems }
+                edit: {
+                    featureGroup: drawnItems
+                }
             });
             map.addControl(drawControl);
 
             map.on(L.Draw.Event.CREATED, function (e) {
-                drawnItems.clearLayers();
-
+                if (drawnLayerRef.current) {
+                    drawnItems.removeLayer(drawnLayerRef.current);
+                }
                 const layer = e.layer;
-                const latlngs = layer.getLatLngs()[0];
 
-                const polygonWKT = `SRID=4326;POLYGON((` + latlngs.map(p => `${p.lng} ${p.lat}`).join(",") + `))`;
-                setShape(polygonWKT);
+                layer.setStyle({ color: color, fillColor: color, fillOpacity: 0.4 });
 
-                const areaHa = L.GeometryUtil.geodesicArea(latlngs) / 10000;
-                setArea(parseFloat(areaHa.toFixed(2)));
-
-                layer.setStyle({ color });
                 drawnItems.addLayer(layer);
+                drawnLayerRef.current = layer;
+
+                const latlngs = layer.getLatLngs()[0];
+                const wkt = `SRID=4326;POLYGON((${latlngs.map(p => `${p.lng} ${p.lat}`).join(", ")}))`;
+                setShape(wkt);
+            });
+
+            map.on(L.Draw.Event.EDITED, function (e) {
+                const layers = e.layers;
+                layers.eachLayer((layer) => {
+                    if (layer instanceof L.Polygon) {
+                        const latlngs = layer.getLatLngs()[0];
+                        const updatedWKT = `SRID=4326;POLYGON((${latlngs.map(p => `${p.lng} ${p.lat}`).join(", ")}))`;
+                        setShape(updatedWKT);
+                        drawnLayerRef.current = layer;
+                    }
+                });
+            });
+
+            if (initialData.shape && initialData.shape.includes("POLYGON")) {
+                const match = initialData.shape.replace("SRID=4326;", "").match(/POLYGON\s*\(\((.+)\)\)/);
+                if (match) {
+                    const latlngs = match[1].split(",").map(pair => {
+                        const [lng, lat] = pair.trim().split(" ").map(Number);
+                        return [lat, lng];
+                    });
+                    const polygon = L.polygon(latlngs, {
+                        color: color,
+                        fillColor: color,
+                        fillOpacity: 0.4
+                    }).addTo(drawnItems);
+                    map.fitBounds(polygon.getBounds());
+                    drawnLayerRef.current = polygon;
+                }
+            }
+        }
+    }, [initialData.shape]);
+
+    useEffect(() => {
+        if (drawnLayerRef.current) {
+            drawnLayerRef.current.setStyle({
+                color: color,
+                fillColor: color,
+                fillOpacity: 0.4
             });
         }
-    }, []);
-
-    const isDuplicateCrop = (crop, others) => crop !== "none" && others.includes(crop);
+    }, [color]);
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -97,7 +136,7 @@ function FieldForm({ initialData = {}, onSubmit, onCancel }) {
                 alert(`Crop ${i + 1} cannot be selected before crop ${i}`);
                 return;
             }
-            if (isDuplicateCrop(crops[i], crops.slice(0, i))) {
+            if (crops[i] !== "none" && crops.slice(0, i).includes(crops[i])) {
                 alert(`Crop ${i + 1} duplicates an earlier crop`);
                 return;
             }
@@ -113,8 +152,7 @@ function FieldForm({ initialData = {}, onSubmit, onCancel }) {
             harvest_date: harvestDate || null,
             shape,
             color,
-            sector_id: sectorId,
-            area
+            sector_id: sectorId
         });
     };
 
@@ -160,20 +198,6 @@ function FieldForm({ initialData = {}, onSubmit, onCancel }) {
                 </label>
 
                 <label>
-                    Shape:
-                    <input type="text" value={shape} readOnly />
-                </label>
-
-                <label>
-                    Area (ha):
-                    <input
-                        type="number"
-                        value={area}
-                        readOnly
-                    />
-                </label>
-
-                <label>
                     Seeding Date:
                     <input
                         type="date"
@@ -210,6 +234,10 @@ function FieldForm({ initialData = {}, onSubmit, onCancel }) {
                     </label>
                 ))}
 
+                <label>
+                    Shape:
+                    <textarea value={shape} readOnly placeholder="Draw a polygon on the map..." rows={4} />
+                </label>
 
                 <div className="form-buttons">
                     <button type="submit" className="submit-button">
