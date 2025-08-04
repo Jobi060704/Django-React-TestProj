@@ -12,6 +12,7 @@ function FieldForm({ initialData = {}, onSubmit, onCancel }) {
     const [color, setColor] = useState(initialData.color || "#00AA00");
     const [sectorId, setSectorId] = useState(initialData.sector_id || "");
     const [sectors, setSectors] = useState([]);
+    const [area, setArea] = useState(initialData.area || 0);
 
     const [crop1, setCrop1] = useState(initialData.crop_1 || "none");
     const [crop2, setCrop2] = useState(initialData.crop_2 || "none");
@@ -19,10 +20,6 @@ function FieldForm({ initialData = {}, onSubmit, onCancel }) {
     const [crop4, setCrop4] = useState(initialData.crop_4 || "none");
     const [seedingDate, setSeedingDate] = useState(initialData.seeding_date || "");
     const [harvestDate, setHarvestDate] = useState(initialData.harvest_date || "");
-
-    const mapRef = useRef(null);
-    const drawnItemsRef = useRef(null);
-    const drawnLayerRef = useRef(null);
 
     const cropOptions = [
         { value: "none", label: "None" },
@@ -34,6 +31,10 @@ function FieldForm({ initialData = {}, onSubmit, onCancel }) {
         { value: "sunflower", label: "Sunflower" },
         { value: "potato", label: "Potato" },
     ];
+
+    const mapRef = useRef(null);
+    const drawnItemsRef = useRef(null);
+    const drawnLayerRef = useRef(null);
 
     useEffect(() => {
         api.get("/api/sectors/")
@@ -84,6 +85,11 @@ function FieldForm({ initialData = {}, onSubmit, onCancel }) {
                 const latlngs = layer.getLatLngs()[0];
                 const wkt = `SRID=4326;POLYGON((${latlngs.map(p => `${p.lng} ${p.lat}`).join(", ")}))`;
                 setShape(wkt);
+
+                // Area calculation in hectares (approximation using L.GeometryUtil if available)
+                const areaMeters = L.GeometryUtil ? L.GeometryUtil.geodesicArea(latlngs) : 0;
+                const areaHa = areaMeters / 10000;
+                setArea(parseFloat(areaHa.toFixed(2)));
             });
 
             map.on(L.Draw.Event.EDITED, function (e) {
@@ -94,6 +100,10 @@ function FieldForm({ initialData = {}, onSubmit, onCancel }) {
                         const updatedWKT = `SRID=4326;POLYGON((${latlngs.map(p => `${p.lng} ${p.lat}`).join(", ")}))`;
                         setShape(updatedWKT);
                         drawnLayerRef.current = layer;
+
+                        const areaMeters = L.GeometryUtil ? L.GeometryUtil.geodesicArea(latlngs) : 0;
+                        const areaHa = areaMeters / 10000;
+                        setArea(parseFloat(areaHa.toFixed(2)));
                     }
                 });
             });
@@ -144,15 +154,16 @@ function FieldForm({ initialData = {}, onSubmit, onCancel }) {
 
         onSubmit({
             logical_name: logicalName,
+            shape,
+            color,
+            sector_id: sectorId,
+            area,
             crop_1: crop1,
             crop_2: crop2,
             crop_3: crop3,
             crop_4: crop4,
             seeding_date: seedingDate || null,
-            harvest_date: harvestDate || null,
-            shape,
-            color,
-            sector_id: sectorId
+            harvest_date: harvestDate || null
         });
     };
 
@@ -162,21 +173,12 @@ function FieldForm({ initialData = {}, onSubmit, onCancel }) {
             <form onSubmit={handleSubmit} className="model-form">
                 <label>
                     Field Name:
-                    <input
-                        type="text"
-                        value={logicalName}
-                        onChange={(e) => setLogicalName(e.target.value)}
-                        required
-                    />
+                    <input type="text" value={logicalName} onChange={e => setLogicalName(e.target.value)} required />
                 </label>
 
                 <label>
                     Sector:
-                    <select
-                        value={sectorId}
-                        onChange={(e) => setSectorId(e.target.value)}
-                        required
-                    >
+                    <select value={sectorId} onChange={e => setSectorId(e.target.value)} required>
                         <option value="">-- Select a Sector --</option>
                         {sectors.map((s) => (
                             <option key={s.id} value={s.id}>{s.name}</option>
@@ -190,7 +192,7 @@ function FieldForm({ initialData = {}, onSubmit, onCancel }) {
                         <input
                             type="color"
                             value={color}
-                            onChange={(e) => setColor(e.target.value)}
+                            onChange={e => setColor(e.target.value)}
                             className="color-picker-input"
                         />
                         <span className="color-indicator" style={{ backgroundColor: color }} />
@@ -198,21 +200,23 @@ function FieldForm({ initialData = {}, onSubmit, onCancel }) {
                 </label>
 
                 <label>
+                    Shape:
+                    <textarea value={shape} readOnly placeholder="Draw a polygon on the map..." rows={4} />
+                </label>
+
+                <label>
+                    Area (ha):
+                    <input type="number" value={area} readOnly />
+                </label>
+
+                <label>
                     Seeding Date:
-                    <input
-                        type="date"
-                        value={seedingDate}
-                        onChange={(e) => setSeedingDate(e.target.value)}
-                    />
+                    <input type="date" value={seedingDate} onChange={(e) => setSeedingDate(e.target.value)} />
                 </label>
 
                 <label>
                     Harvest Date:
-                    <input
-                        type="date"
-                        value={harvestDate}
-                        onChange={(e) => setHarvestDate(e.target.value)}
-                    />
+                    <input type="date" value={harvestDate} onChange={(e) => setHarvestDate(e.target.value)} />
                 </label>
 
                 {[crop1, crop2, crop3, crop4].map((crop, i) => (
@@ -226,18 +230,11 @@ function FieldForm({ initialData = {}, onSubmit, onCancel }) {
                             }}
                         >
                             {cropOptions.map(opt => (
-                                <option key={opt.value} value={opt.value}>
-                                    {opt.label}
-                                </option>
+                                <option key={opt.value} value={opt.value}>{opt.label}</option>
                             ))}
                         </select>
                     </label>
                 ))}
-
-                <label>
-                    Shape:
-                    <textarea value={shape} readOnly placeholder="Draw a polygon on the map..." rows={4} />
-                </label>
 
                 <div className="form-buttons">
                     <button type="submit" className="submit-button">
