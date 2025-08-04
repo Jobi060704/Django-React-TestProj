@@ -1,27 +1,27 @@
 import { useNavigate } from "react-router-dom";
 import api from "../../../api.js";
-import PivotForm from "../../../components/ModelForms/PivotForm.jsx";
+import FieldForm from "../../../components/ModelForms/FieldForm.jsx";
 import ModelAndMapLayout from "../../../components/ModelAndMapLayout.jsx";
 import "../../../styles/ModelAndMapLayout.css";
 
-function PivotAdd() {
+function FieldAdd() {
     const navigate = useNavigate();
 
     const handleCreate = (formData) => {
-        api.post("/api/pivots/", formData)
-            .then(() => navigate("/dashboard/pivots"))
+        api.post("/api/fields/", formData)
+            .then(() => navigate("/dashboard/fields"))
             .catch((err) => {
-                console.error("Failed to create pivot", err);
-                alert("Failed to create pivot.");
+                console.error("Failed to create field", err);
+                alert("Failed to create field.");
             });
     };
 
     return (
         <ModelAndMapLayout
             leftPanel={
-                <PivotForm
+                <FieldForm
                     onSubmit={handleCreate}
-                    onCancel={() => navigate("/dashboard/pivots")}
+                    onCancel={() => navigate("/dashboard/fields")}
                 />
             }
             rightPanel={<div id="model-map" className="model-map" />}
@@ -29,4 +29,4 @@ function PivotAdd() {
     );
 }
 
-export default PivotAdd;
+export default FieldAdd;

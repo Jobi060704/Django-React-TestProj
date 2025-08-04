@@ -6,13 +6,12 @@ import "leaflet-draw";
 import api from "../../api.js";
 import "../../styles/ModelAndMapLayout.css";
 
-function PivotForm({ initialData = {}, onSubmit, onCancel }) {
+function FieldForm({ initialData = {}, onSubmit, onCancel }) {
     const [logicalName, setLogicalName] = useState(initialData.logical_name || "");
-    const [center, setCenter] = useState(initialData.center || "");
-    const [radius, setRadius] = useState(initialData.radius_m || 500);
-    const [sectorId, setSectorId] = useState(initialData.sector_id || "");
-    const [color, setColor] = useState(initialData.color || "#FF0000");
+    const [shape, setShape] = useState(initialData.shape || "");
+    const [color, setColor] = useState(initialData.color || "#00AAFF");
     const [area, setArea] = useState(initialData.area || 0);
+    const [sectorId, setSectorId] = useState(initialData.sector_id || "");
     const [sectors, setSectors] = useState([]);
 
     const [crop1, setCrop1] = useState(initialData.crop_1 || "none");
@@ -33,12 +32,8 @@ function PivotForm({ initialData = {}, onSubmit, onCancel }) {
         { value: "potato", label: "Potato" },
     ];
 
-
     const mapRef = useRef(null);
-    const circleRef = useRef(null);
     const drawnItemsRef = useRef(null);
-
-    const isDuplicateCrop = (crop, others) => crop !== "none" && others.includes(crop);
 
     useEffect(() => {
         api.get("/api/sectors/")
@@ -62,9 +57,9 @@ function PivotForm({ initialData = {}, onSubmit, onCancel }) {
 
             const drawControl = new L.Control.Draw({
                 draw: {
-                    circle: true,
+                    polygon: true,
                     marker: false,
-                    polygon: false,
+                    circle: false,
                     polyline: false,
                     rectangle: false,
                     circlemarker: false
@@ -74,49 +69,24 @@ function PivotForm({ initialData = {}, onSubmit, onCancel }) {
             map.addControl(drawControl);
 
             map.on(L.Draw.Event.CREATED, function (e) {
-                if (circleRef.current) {
-                    drawnItems.removeLayer(circleRef.current);
-                }
+                drawnItems.clearLayers();
 
                 const layer = e.layer;
-                const centerLatLng = layer.getLatLng();
-                const radiusM = layer.getRadius();
-                const wkt = `SRID=4326;POINT(${centerLatLng.lng} ${centerLatLng.lat})`;
-                const calculatedArea = (Math.PI * Math.pow(radiusM, 2)) / 10000;
+                const latlngs = layer.getLatLngs()[0];
 
-                setArea(parseFloat(calculatedArea.toFixed(2)));
-                setCenter(wkt);
-                setRadius(Math.round(radiusM));
+                const polygonWKT = `SRID=4326;POLYGON((` + latlngs.map(p => `${p.lng} ${p.lat}`).join(",") + `))`;
+                setShape(polygonWKT);
 
-                const circle = L.circle(centerLatLng, {
-                    radius: radiusM,
-                    color: color
-                }).addTo(map);
+                const areaHa = L.GeometryUtil.geodesicArea(latlngs) / 10000;
+                setArea(parseFloat(areaHa.toFixed(2)));
 
-                drawnItems.addLayer(circle);
-                circleRef.current = circle;
+                layer.setStyle({ color });
+                drawnItems.addLayer(layer);
             });
-
-            if (initialData.center && initialData.center.includes("POINT")) {
-                const match = initialData.center.replace("SRID=4326;", "").match(/POINT\s*\(([-\d.]+)\s+([\-\d.]+)\)/);
-                if (match) {
-                    const latlng = L.latLng(parseFloat(match[2]), parseFloat(match[1]));
-                    const circle = L.circle(latlng, {
-                        radius: radius,
-                        color: color
-                    }).addTo(drawnItems);
-                    circleRef.current = circle;
-                    map.setView(latlng, 13);
-                }
-            }
         }
-    }, [initialData.center]);
+    }, []);
 
-    useEffect(() => {
-        if (circleRef.current) {
-            circleRef.current.setStyle({ color });
-        }
-    }, [color]);
+    const isDuplicateCrop = (crop, others) => crop !== "none" && others.includes(crop);
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -141,20 +111,19 @@ function PivotForm({ initialData = {}, onSubmit, onCancel }) {
             crop_4: crop4,
             seeding_date: seedingDate || null,
             harvest_date: harvestDate || null,
-            center,
-            radius_m: radius,
-            sector_id: sectorId,
+            shape,
             color,
-            area  // ✅ Fix: correctly named to match model
+            sector_id: sectorId,
+            area
         });
     };
 
     return (
         <div className="model-list">
-            <h2>{initialData.id ? "Edit Pivot" : "Add Pivot"}</h2>
+            <h2>{initialData.id ? "Edit Field" : "Add Field"}</h2>
             <form onSubmit={handleSubmit} className="model-form">
                 <label>
-                    Pivot Name:
+                    Field Name:
                     <input
                         type="text"
                         value={logicalName}
@@ -191,22 +160,8 @@ function PivotForm({ initialData = {}, onSubmit, onCancel }) {
                 </label>
 
                 <label>
-                    Center:
-                    <input
-                        type="text"
-                        value={center}
-                        readOnly
-                        placeholder="Use the map to draw a circle"
-                    />
-                </label>
-
-                <label>
-                    Radius (meters):
-                    <input
-                        type="number"
-                        value={radius}
-                        readOnly
-                    />
+                    Shape:
+                    <input type="text" value={shape} readOnly />
                 </label>
 
                 <label>
@@ -269,4 +224,4 @@ function PivotForm({ initialData = {}, onSubmit, onCancel }) {
     );
 }
 
-export default PivotForm;
+export default FieldForm;
