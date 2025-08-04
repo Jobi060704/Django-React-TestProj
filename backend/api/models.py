@@ -87,7 +87,6 @@ class CropField(models.Model):
     crop_4 = models.CharField(max_length=50, choices=CROP_CHOICES, blank=True, null=True)
     seeding_date = models.DateField(null=True, blank=True)
     harvest_date = models.DateField(null=True, blank=True)
-    center = models.CharField(max_length=1000, null=True, blank=True)  # WKT POINT
     shape = models.TextField(null=True, blank=True)  # WKT POLYGON
     color = models.CharField(max_length=7, default="#000080")
 

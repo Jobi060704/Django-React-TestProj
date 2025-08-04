@@ -34,7 +34,7 @@ class CropPivotAdmin(admin.ModelAdmin):
 # CropField
 @admin.register(CropField)
 class CropFieldAdmin(admin.ModelAdmin):
-    list_display = ['logical_name', 'sector', 'area', 'seeding_date', 'harvest_date', 'center', 'color', 'shape']
+    list_display = ['logical_name', 'sector', 'area', 'seeding_date', 'harvest_date', 'color', 'shape']
     search_fields = ['logical_name']
     list_filter = ['sector']
     ordering = ['sector', 'logical_name']

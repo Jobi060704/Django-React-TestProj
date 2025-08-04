@@ -18,6 +18,9 @@ import SectorEdit from "./pages/Models/Sectors/SectorEdit.jsx";
 import Pivots from "./pages/Models/Pivots/Pivots.jsx";
 import PivotAdd from "./pages/Models/Pivots/PivotAdd.jsx";
 import PivotEdit from "./pages/Models/Pivots/PivotEdit.jsx";
+import Fields from "./pages/Models/Fields/Fields.jsx";
+import FieldAdd from "./pages/Models/Fields/FieldAdd.jsx";
+import FieldEdit from "./pages/Models/Fields/FieldEdit.jsx";
 
 function Logout() {
     localStorage.clear();
@@ -51,6 +54,10 @@ function App() {
                 <Route path="/dashboard/pivots" element={<ProtectedRoute> <MainLayout> <Pivots /> </MainLayout> </ProtectedRoute>} />
                 <Route path="/dashboard/pivots/add" element={<ProtectedRoute> <MainLayout> <PivotAdd /> </MainLayout> </ProtectedRoute>} />
                 <Route path="/dashboard/pivots/:id/edit" element={<ProtectedRoute> <MainLayout> <PivotEdit /> </MainLayout> </ProtectedRoute>} />
+
+                <Route path="/dashboard/fields" element={<ProtectedRoute> <MainLayout> <Fields /> </MainLayout> </ProtectedRoute>} />
+                <Route path="/dashboard/fields/add" element={<ProtectedRoute> <MainLayout> <FieldAdd /> </MainLayout> </ProtectedRoute>} />
+                <Route path="/dashboard/fields/:id/edit" element={<ProtectedRoute> <MainLayout> <FieldEdit /> </MainLayout> </ProtectedRoute>} />
 
 
                 <Route path="/login" element={<Login />} />

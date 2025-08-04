@@ -117,7 +117,7 @@ class CropFieldSerializer(serializers.ModelSerializer):
         model = CropField
         fields = [
             "id", "logical_name", "area", "crop_1", "crop_2", "crop_3", "crop_4",
-            "seeding_date", "harvest_date", "center", "shape", "color",
+            "seeding_date", "harvest_date", "shape", "color",
             "sector", "sector_id"
         ]
 

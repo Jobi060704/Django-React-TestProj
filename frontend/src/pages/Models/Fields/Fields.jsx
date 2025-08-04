@@ -1,96 +1,85 @@
 import { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import api from "../../../api.js";
-import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import "leaflet-draw/dist/leaflet.draw.css";
-import "leaflet-draw";
-import "../../../styles/ModelAndMapLayout.css";
+import "leaflet/dist/leaflet.css";
 import { FaEdit, FaTrash } from "react-icons/fa";
 import WarningBox from "../../../components/WarningBox.jsx";
 import ModelAndMapLayout from "../../../components/ModelAndMapLayout.jsx";
 
-function Pivots() {
-    const [pivots, setPivots] = useState([]);
-    const [pivotToDelete, setPivotToDelete] = useState(null);
-    const [selectedPivot, setSelectedPivot] = useState(null);
+function Fields() {
+    const [fields, setFields] = useState([]);
+    const [fieldToDelete, setFieldToDelete] = useState(null);
+    const [selectedField, setSelectedField] = useState(null);
+    const [searchQuery, setSearchQuery] = useState("");
     const [sortKey, setSortKey] = useState("logical_name");
     const [sortOrder, setSortOrder] = useState("asc");
-    const [searchQuery, setSearchQuery] = useState("");
     const [expandedSectors, setExpandedSectors] = useState({});
     const mapRef = useRef(null);
-    const circlesRef = useRef({});
+    const polygonsRef = useRef({});
 
     const toggleSectorGroup = (sector) => {
-        setExpandedSectors(prev => ({
-            ...prev,
-            [sector]: !prev[sector]
-        }));
+        setExpandedSectors(prev => ({ ...prev, [sector]: !prev[sector] }));
     };
 
-    const handleDeleteRequest = (e, pivot) => {
+    const handleDeleteRequest = (e, field) => {
         e.stopPropagation();
-        setPivotToDelete(pivot);
+        setFieldToDelete(field);
     };
 
     const confirmDelete = () => {
-        api.delete(`/api/pivots/${pivotToDelete.id}/`)
+        api.delete(`/api/fields/${fieldToDelete.id}/`)
             .then(() => {
-                setPivots(prev => prev.filter(p => p.id !== pivotToDelete.id));
-                setPivotToDelete(null);
+                setFields(prev => prev.filter(f => f.id !== fieldToDelete.id));
+                setFieldToDelete(null);
             })
             .catch(err => {
-                console.error("Failed to delete pivot", err);
-                alert("Failed to delete pivot.");
-                setPivotToDelete(null);
+                console.error("Failed to delete field", err);
+                alert("Failed to delete field.");
+                setFieldToDelete(null);
             });
     };
 
-    const filteredPivots = pivots.filter(p =>
-        p.logical_name.toLowerCase().includes(searchQuery.toLowerCase())
+    const filteredFields = fields.filter(f =>
+        f.logical_name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    const sortedPivots = [...filteredPivots].sort((a, b) => {
+    const sortedFields = [...filteredFields].sort((a, b) => {
         const valA = a[sortKey]?.toLowerCase?.() || "";
         const valB = b[sortKey]?.toLowerCase?.() || "";
         return sortOrder === "asc" ? valA.localeCompare(valB) : valB.localeCompare(valA);
     });
 
-    const groupedPivots = sortedPivots.reduce((acc, pivot) => {
-        const sector = pivot.sector || "Unknown";
+    const groupedFields = sortedFields.reduce((acc, field) => {
+        const sector = field.sector || "Unknown";
         if (!acc[sector]) acc[sector] = [];
-        acc[sector].push(pivot);
+        acc[sector].push(field);
         return acc;
     }, {});
 
-    const createCircleIcon = (hexColor) => (
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="12" cy="12" r="10" fill={hexColor} stroke="black" strokeWidth="1.5" />
-            <circle cx="12" cy="12" r="2" fill="black" />
-        </svg>
-    );
-
     useEffect(() => {
-        api.get("/api/pivots/")
+        api.get("/api/fields/")
             .then((res) => {
-                const parsed = res.data.map((pivot) => {
-                    let lat = null, lng = null;
-                    if (pivot.center && pivot.center.includes("POINT")) {
-                        const wkt = pivot.center.replace("SRID=4326;", "").trim();
-                        const match = wkt.match(/POINT\s*\(([-\d.]+)\s+([-\d.]+)\)/);
+                const parsed = res.data.map((field) => {
+                    let polygonCoords = [];
+                    if (field.shape && field.shape.includes("POLYGON")) {
+                        const wkt = field.shape.replace("SRID=4326;", "").trim();
+                        const match = wkt.match(/POLYGON\s*\(\((.+?)\)\)/);
                         if (match) {
-                            lng = parseFloat(match[1]);
-                            lat = parseFloat(match[2]);
+                            polygonCoords = match[1].split(",").map((coord) => {
+                                const [lng, lat] = coord.trim().split(" ").map(Number);
+                                return [lat, lng];
+                            });
                         }
                     }
                     return {
-                        ...pivot,
-                        location: lat && lng ? { lat, lng } : null
+                        ...field,
+                        polygonCoords,
                     };
                 });
-                setPivots(parsed);
+                setFields(parsed);
             })
-            .catch((err) => console.error("Failed to load pivots", err));
+            .catch((err) => console.error("Failed to load fields", err));
     }, []);
 
     useEffect(() => {
@@ -105,46 +94,68 @@ function Pivots() {
 
     useEffect(() => {
         if (mapRef.current) {
-            Object.values(circlesRef.current).forEach(circle => mapRef.current.removeLayer(circle));
-            circlesRef.current = {};
+            Object.values(polygonsRef.current).forEach(polygon => mapRef.current.removeLayer(polygon));
+            polygonsRef.current = {};
 
-            pivots.forEach(pivot => {
-                if (pivot.location) {
-                    const circle = L.circle(pivot.location, {
-                        radius: pivot.radius_m,
-                        color: pivot.color || "#3388ff",
+            fields.forEach(field => {
+                if (field.polygonCoords?.length > 2) {
+                    const polygon = L.polygon(field.polygonCoords, {
+                        color: field.color || "#3388ff",
                         fillOpacity: 0.5,
                         weight: 2
                     })
                         .addTo(mapRef.current)
-                        .bindTooltip(`${pivot.logical_name} (${pivot.sector})`, {
+                        .bindTooltip(`${field.logical_name} (${field.sector})`, {
                             permanent: false,
                             direction: "top",
                             className: "model-tooltip"
                         });
 
-                    circlesRef.current[pivot.id] = circle;
+                    polygonsRef.current[field.id] = polygon;
                 }
             });
         }
-    }, [pivots]);
+    }, [fields]);
 
-    const handlePivotClick = (pivot) => {
-        setSelectedPivot(pivot);
-        if (pivot.location && mapRef.current) {
-            mapRef.current.setView([pivot.location.lat, pivot.location.lng], 14);
+    const handleFieldClick = (field) => {
+        setSelectedField(field);
+        const polygon = polygonsRef.current[field.id];
+        if (polygon && mapRef.current) {
+            mapRef.current.fitBounds(polygon.getBounds(), { padding: [20, 20] });
         }
+    };
+
+    const getMiniFieldSVG = (polygonCoords, color = "#888") => {
+        if (!polygonCoords || polygonCoords.length < 3) return null;
+        const lats = polygonCoords.map(([lat]) => lat);
+        const lngs = polygonCoords.map(([, lng]) => lng);
+        const minLat = Math.min(...lats);
+        const maxLat = Math.max(...lats);
+        const minLng = Math.min(...lngs);
+        const maxLng = Math.max(...lngs);
+
+        const points = polygonCoords.map(([lat, lng]) => {
+            const scaleLat = (lat - minLat) / (maxLat - minLat || 1);
+            const scaleLng = (lng - minLng) / (maxLng - minLng || 1);
+            return `${scaleLng * 90 + 5},${90 - scaleLat * 90 + 5}`;
+        }).join(" ");
+
+        return (
+            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" className="mini-sector-svg">
+                <polygon points={points} fill={color} stroke="black" strokeWidth="2" />
+            </svg>
+        );
     };
 
     return (
         <ModelAndMapLayout
             leftPanel={
                 <>
-                    {pivotToDelete && (
+                    {fieldToDelete && (
                         <WarningBox
-                            message={`Are you sure you want to delete "${pivotToDelete.logical_name}"?`}
+                            message={`Are you sure you want to delete "${fieldToDelete.logical_name}"?`}
                             onConfirm={confirmDelete}
-                            onCancel={() => setPivotToDelete(null)}
+                            onCancel={() => setFieldToDelete(null)}
                         />
                     )}
 
@@ -152,7 +163,7 @@ function Pivots() {
                         <div className="model-list">
                             <div className="model-header">
                                 <div className="model-header-top">
-                                    <h2>Pivots</h2>
+                                    <h2>Fields</h2>
                                     <div className="sort-controls">
                                         <label htmlFor="sort-select">Sort:</label>
                                         <select
@@ -165,9 +176,7 @@ function Pivots() {
                                         </select>
                                         <button
                                             className="sort-arrow"
-                                            onClick={() =>
-                                                setSortOrder(sortOrder === "asc" ? "desc" : "asc")
-                                            }
+                                            onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
                                         >
                                             {sortOrder === "asc" ? "↑" : "↓"}
                                         </button>
@@ -186,7 +195,7 @@ function Pivots() {
                                             <button className="clear-search" onClick={() => setSearchQuery("")}>✕</button>
                                         )}
                                     </div>
-                                    <Link to="/dashboard/pivots/add" className="add-model-button">
+                                    <Link to="/dashboard/fields/add" className="add-model-button">
                                         + Add
                                     </Link>
                                 </div>
@@ -194,7 +203,7 @@ function Pivots() {
 
                             <div className="model-list-content">
                                 <div className="model-boxes">
-                                    {Object.entries(groupedPivots).map(([sector, pivotsInGroup]) => (
+                                    {Object.entries(groupedFields).map(([sector, group]) => (
                                         <div key={sector} className="model-group">
                                             <div
                                                 className="model-group-header"
@@ -203,36 +212,35 @@ function Pivots() {
                                                 <strong>{sector}</strong>
                                                 <span className="collapse-icon">{expandedSectors[sector] ? "−" : "+"}</span>
                                             </div>
-
                                             {expandedSectors[sector] && (
                                                 <div className="model-group-boxes">
-                                                    {pivotsInGroup.map((pivot) => (
+                                                    {group.map((field) => (
                                                         <div
-                                                            key={pivot.id}
+                                                            key={field.id}
                                                             className="model-box"
-                                                            onClick={() => handlePivotClick(pivot)}
+                                                            onClick={() => handleFieldClick(field)}
                                                         >
                                                             <div className="model-box-top">
                                                                 <h3>
-                                                                    <span className="model-box-marker">
-                                                                        {createCircleIcon(pivot.color)}
+                                                                    <span className="model-box-mini-shape">
+                                                                        {getMiniFieldSVG(field.polygonCoords, field.color)}
                                                                     </span>
-                                                                    {pivot.logical_name}
+                                                                    {field.logical_name}
                                                                 </h3>
                                                                 <div className="model-actions">
-                                                                    <Link to={`/dashboard/pivots/${pivot.id}/edit`}>
+                                                                    <Link to={`/dashboard/fields/${field.id}/edit`}>
                                                                         <FaEdit className="action-icon edit" />
                                                                     </Link>
                                                                     <button
                                                                         className="action-icon delete"
-                                                                        onClick={(e) => handleDeleteRequest(e, pivot)}
+                                                                        onClick={(e) => handleDeleteRequest(e, field)}
                                                                     >
                                                                         <FaTrash />
                                                                     </button>
                                                                 </div>
                                                             </div>
-                                                            <p>{pivot.crop_1}{pivot.crop_2 ? ", " + pivot.crop_2 : ""}</p>
-                                                            <p>{pivot.area?.toFixed(2)} ha</p>
+                                                            <p>{field.crop_1}{field.crop_2 && ", " + field.crop_2}</p>
+                                                            <p>{field.area?.toFixed(2)} ha</p>
                                                         </div>
                                                     ))}
                                                 </div>
@@ -250,4 +258,4 @@ function Pivots() {
     );
 }
 
-export default Pivots;
+export default Fields;
