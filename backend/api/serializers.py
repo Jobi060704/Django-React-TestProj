@@ -57,6 +57,11 @@ class RegionSerializer(serializers.ModelSerializer):
         model = Region
         fields = ["id", "name", "center", "company", "company_id", "color"]
 
+    def validate_company(self, company):
+        if company.owner != self.context["request"].user:
+            raise PermissionDenied("You do not own this company.")
+        return company
+
 # Waterway Sector Serializer
 class WaterwaySectorSerializer(serializers.ModelSerializer):
     region = serializers.ReadOnlyField(source='region.name')
@@ -73,6 +78,11 @@ class WaterwaySectorSerializer(serializers.ModelSerializer):
             "region", "region_id", "pivot_count", "total_pivot_area", "color"
         ]
         read_only_fields = ["area_ha"]
+
+    def validate_region(self, region):
+        if region.company.owner != self.context["request"].user:
+            raise PermissionDenied("You do not own the company of this region.")
+        return region
 
 # Crop Serializer
 class CropSerializer(serializers.ModelSerializer):
@@ -99,6 +109,11 @@ class CropPivotSerializer(serializers.ModelSerializer):
             "sector", "sector_id", "color"
         ]
 
+    def validate_sector(self, sector):
+        if sector.region.company.owner != self.context["request"].user:
+            raise PermissionDenied("You do not own this sector's company.")
+        return sector
+
 # CropField Serializer
 class CropFieldSerializer(serializers.ModelSerializer):
     sector = serializers.ReadOnlyField(source='sector.name')
@@ -117,6 +132,11 @@ class CropFieldSerializer(serializers.ModelSerializer):
             "seeding_date", "harvest_date", "shape", "color",
             "sector", "sector_id"
         ]
+
+    def validate_sector(self, sector):
+        if sector.region.company.owner != self.context["request"].user:
+            raise PermissionDenied("You do not own this sector's company.")
+        return sector
 
 # CropRotationEntry (Nested in Rotation)
 class CropRotationEntrySerializer(serializers.ModelSerializer):
@@ -149,3 +169,13 @@ class CropRotationSerializer(serializers.ModelSerializer):
         fields = [
             "id", "year", "pivot", "pivot_id", "field", "field_id", "entries"
         ]
+
+    def validate_pivot(self, pivot):
+        if pivot and pivot.sector.region.company.owner != self.context["request"].user:
+            raise PermissionDenied("You do not own the pivot's company.")
+        return pivot
+
+    def validate_field(self, field):
+        if field and field.sector.region.company.owner != self.context["request"].user:
+            raise PermissionDenied("You do not own the field's company.")
+        return field
