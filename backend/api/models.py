@@ -2,16 +2,35 @@ from django.db import models
 from django.contrib.auth.models import User
 from math import pi
 
-CROP_CHOICES = [
-    ('none', 'None'),
-    ('corn', 'Corn'),
-    ('wheat', 'Wheat'),
-    ('soybean', 'Soybean'),
-    ('barley', 'Barley'),
-    ('canola', 'Canola'),
-    ('sunflower', 'Sunflower'),
-    ('potato', 'Potato'),
-]
+# CROP_CHOICES = [
+#     ('none', 'None'),
+#     ('corn', 'Corn'),
+#     ('wheat', 'Wheat'),
+#     ('soybean', 'Soybean'),
+#     ('barley', 'Barley'),
+#     ('canola', 'Canola'),
+#     ('sunflower', 'Sunflower'),
+#     ('potato', 'Potato'),
+# ]
+
+class Crop(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+    subtype = models.CharField(max_length=100, blank=True, null=True)
+    best_season = models.CharField(
+        max_length=20,
+        choices=[
+            ('spring', 'Spring'),
+            ('summer', 'Summer'),
+            ('fall', 'Fall'),
+            ('winter', 'Winter'),
+        ],
+        blank=True,
+        null=True
+    )
+
+    def __str__(self):
+        return f"{self.name} ({self.subtype})" if self.subtype else self.name
+
 
 class Company(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='owned_companies')
@@ -63,10 +82,9 @@ class CropPivot(models.Model):
     sector = models.ForeignKey(WaterwaySector, on_delete=models.CASCADE, related_name='pivots')
     logical_name = models.CharField(max_length=10)
     area = models.FloatField()  # Now must be calculated client-side and passed in
-    crop_1 = models.CharField(max_length=50, choices=CROP_CHOICES, blank=True, null=True)
-    crop_2 = models.CharField(max_length=50, choices=CROP_CHOICES, blank=True, null=True)
-    crop_3 = models.CharField(max_length=50, choices=CROP_CHOICES, blank=True, null=True)
-    crop_4 = models.CharField(max_length=50, choices=CROP_CHOICES, blank=True, null=True)
+
+    crops = models.ManyToManyField("Crop", blank=True)
+
     seeding_date = models.DateField(null=True, blank=True)
     harvest_date = models.DateField(null=True, blank=True)
     center = models.CharField(max_length=1000, null=True, blank=True)  # WKT POINT
@@ -81,10 +99,9 @@ class CropField(models.Model):
     sector = models.ForeignKey(WaterwaySector, on_delete=models.CASCADE, related_name='fields')
     logical_name = models.CharField(max_length=10)
     area = models.FloatField()
-    crop_1 = models.CharField(max_length=50, choices=CROP_CHOICES, blank=True, null=True)
-    crop_2 = models.CharField(max_length=50, choices=CROP_CHOICES, blank=True, null=True)
-    crop_3 = models.CharField(max_length=50, choices=CROP_CHOICES, blank=True, null=True)
-    crop_4 = models.CharField(max_length=50, choices=CROP_CHOICES, blank=True, null=True)
+
+    crops = models.ManyToManyField("Crop", blank=True)
+
     seeding_date = models.DateField(null=True, blank=True)
     harvest_date = models.DateField(null=True, blank=True)
     shape = models.TextField(null=True, blank=True)  # WKT POLYGON
@@ -109,7 +126,9 @@ class CropRotation(models.Model):
     company_name = models.CharField(max_length=100)
 
     year = models.PositiveIntegerField()
-    crop = models.CharField(max_length=50, choices=CROP_CHOICES)
+
+    crops = models.ManyToManyField("Crop", blank=True)
+
     seeding_date = models.DateField(null=True, blank=True)
     harvest_date = models.DateField(null=True, blank=True)
     yield_tons = models.FloatField(null=True, blank=True)
@@ -131,4 +150,4 @@ class CropRotation(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.year} – {self.crop} ({self.pivot_name}/{self.sector_name})"
+        return f"{self.year} – {self.crops.count()} crop/s, ({self.pivot_name}/{self.sector_name})"
