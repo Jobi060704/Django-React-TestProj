@@ -83,7 +83,7 @@ class CropPivot(models.Model):
     logical_name = models.CharField(max_length=10)
     area = models.FloatField()  # Now must be calculated client-side and passed in
 
-    crops = models.ManyToManyField("Crop", blank=True)
+    crops = models.ManyToManyField(Crop, blank=True)
 
     seeding_date = models.DateField(null=True, blank=True)
     harvest_date = models.DateField(null=True, blank=True)
@@ -100,7 +100,7 @@ class CropField(models.Model):
     logical_name = models.CharField(max_length=10)
     area = models.FloatField()
 
-    crops = models.ManyToManyField("Crop", blank=True)
+    crops = models.ManyToManyField(Crop, blank=True)
 
     seeding_date = models.DateField(null=True, blank=True)
     harvest_date = models.DateField(null=True, blank=True)
@@ -120,34 +120,47 @@ class CropField(models.Model):
 class CropRotation(models.Model):
     pivot = models.ForeignKey(CropPivot, null=True, blank=True, on_delete=models.SET_NULL, related_name="pivot_rotations")
     field = models.ForeignKey(CropField, null=True, blank=True, on_delete=models.SET_NULL, related_name="field_rotations")
-    pivot_name = models.CharField(max_length=50, null=True, blank=True)
-    field_name = models.CharField(max_length=50, null=True, blank=True)
-    sector_name = models.CharField(max_length=100)
-    company_name = models.CharField(max_length=100)
+
+    # New proper FK references
+    sector = models.ForeignKey(WaterwaySector, on_delete=models.SET_NULL, null=True, related_name="crop_rotations")
+    region = models.ForeignKey(Region, on_delete=models.SET_NULL, null=True, related_name="crop_rotations")
+    company = models.ForeignKey(Company, on_delete=models.SET_NULL, null=True, related_name="crop_rotations")
 
     year = models.PositiveIntegerField()
-
-    crops = models.ManyToManyField("Crop", blank=True)
-
-    seeding_date = models.DateField(null=True, blank=True)
-    harvest_date = models.DateField(null=True, blank=True)
-    yield_tons = models.FloatField(null=True, blank=True)
     notes = models.TextField(blank=True, null=True)
 
     class Meta:
-        ordering = ['-year']  # Sort by latest year first
-        unique_together = ('pivot', 'field', 'year', 'crop')  # Optional, if business logic allows
+        ordering = ['-year']
+        unique_together = ('pivot', 'field', 'year')
 
     def save(self, *args, **kwargs):
-        # If pivot is linked and names are empty, snapshot them
+        # Auto-fill sector, region, company
         if self.pivot:
-            if not self.pivot_name:
-                self.pivot_name = self.pivot.logical_name
-            if not self.sector_name:
-                self.sector_name = self.pivot.sector.name
-            if not self.company_name:
-                self.company_name = self.pivot.sector.region.company.name
+            self.sector = self.pivot.sector
+            self.region = self.pivot.sector.region
+            self.company = self.pivot.sector.region.company
+        elif self.field:
+            self.sector = self.field.sector
+            self.region = self.field.sector.region
+            self.company = self.field.sector.region.company
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.year} – {self.crops.count()} crop/s, ({self.pivot_name}/{self.sector_name})"
+        name = self.pivot.logical_name if self.pivot else self.field.logical_name if self.field else "Unknown"
+        return f"{self.year} – {name} ({self.sector.name if self.sector else 'No sector'})"
+
+class CropRotationEntry(models.Model):
+    rotation = models.ForeignKey(CropRotation, on_delete=models.CASCADE, related_name="entries")
+    crop = models.ForeignKey(Crop, on_delete=models.CASCADE)
+
+    seeding_date = models.DateField(null=True, blank=True)
+    harvest_date = models.DateField(null=True, blank=True)
+
+    actual_yield_tons = models.FloatField(null=True, blank=True)
+    expected_yield_tons = models.FloatField(null=True, blank=True)
+
+    class Meta:
+        unique_together = ('rotation', 'crop')  # Optional, prevents same crop repeated
+
+    def __str__(self):
+        return f"{self.crop.name} ({self.rotation.year})"
