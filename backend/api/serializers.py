@@ -144,13 +144,30 @@ class CropRotationEntrySerializer(serializers.ModelSerializer):
     crop_id = serializers.PrimaryKeyRelatedField(
         queryset=Crop.objects.all(), source='crop', write_only=True
     )
+    rotation = serializers.PrimaryKeyRelatedField(read_only=True)
+    rotation_id = serializers.PrimaryKeyRelatedField(
+        queryset=CropRotation.objects.all(), source='rotation', write_only=True
+    )
 
     class Meta:
         model = CropRotationEntry
         fields = [
-            "id", "crop", "crop_id", "seeding_date", "harvest_date",
-            "actual_yield_tons", "expected_yield_tons"
+            "id", "rotation", "rotation_id", "crop", "crop_id",
+            "seeding_date", "harvest_date", "actual_yield_tons", "expected_yield_tons"
         ]
+
+    def validate_rotation(self, rotation):
+        request = self.context["request"]
+        user = request.user
+
+        if rotation.pivot and rotation.pivot.sector.region.company.owner != user:
+            raise PermissionDenied("You do not own this rotation's pivot's company.")
+
+        if rotation.field and rotation.field.sector.region.company.owner != user:
+            raise PermissionDenied("You do not own this rotation's field's company.")
+
+        return rotation
+
 
 # CropRotation with nested entries
 class CropRotationSerializer(serializers.ModelSerializer):

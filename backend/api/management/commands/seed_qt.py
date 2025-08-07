@@ -792,7 +792,9 @@ class Command(BaseCommand):
 
         # ----------------------------
         # Create User
-        user = User.objects.create_user(username="vugar", password="123")
+        user = User.objects.create_user(username="vugar", email="bs.vugar@gmail.com", password="123")
+
+        User.objects.create_superuser(username="admin", email="admin@example.com", password="admin")
 
         # Create Crops
         all_crops = []
@@ -857,13 +859,15 @@ class Command(BaseCommand):
                 rotation = CropRotation.objects.create(pivot=pivot, field=None, year=year)
                 for _ in range(random.randint(0, 2)):
                     crop = random.choice(all_crops)
-                    CropRotationEntry.objects.create(
+                    CropRotationEntry.objects.get_or_create(
                         rotation=rotation,
                         crop=crop,
-                        seeding_date=date(year, random.randint(2, 4), random.randint(1, 28)),
-                        harvest_date=date(year, random.randint(8, 10), random.randint(1, 28)),
-                        actual_yield_tons=round(random.uniform(5.0, 15.0), 2),
-                        expected_yield_tons=round(random.uniform(10.0, 20.0), 2),
+                        defaults={
+                            "seeding_date": date(year, random.randint(2, 4), random.randint(1, 28)),
+                            "harvest_date": date(year, random.randint(8, 10), random.randint(1, 28)),
+                            "actual_yield_tons": round(random.uniform(5.0, 15.0), 2),
+                            "expected_yield_tons": round(random.uniform(10.0, 20.0), 2),
+                        }
                     )
 
         # Sector 6 with Fields
@@ -917,13 +921,15 @@ class Command(BaseCommand):
                 rotation = CropRotation.objects.create(pivot=None, field=field, year=year)
                 for _ in range(random.randint(0, 2)):
                     crop = random.choice(all_crops)
-                    CropRotationEntry.objects.create(
+                    CropRotationEntry.objects.get_or_create(
                         rotation=rotation,
                         crop=crop,
-                        seeding_date=date(year, random.randint(2, 4), random.randint(1, 28)),
-                        harvest_date=date(year, random.randint(8, 10), random.randint(1, 28)),
-                        actual_yield_tons=round(random.uniform(5.0, 15.0), 2),
-                        expected_yield_tons=round(random.uniform(10.0, 20.0), 2),
+                        defaults={
+                            "seeding_date": date(year, random.randint(2, 4), random.randint(1, 28)),
+                            "harvest_date": date(year, random.randint(8, 10), random.randint(1, 28)),
+                            "actual_yield_tons": round(random.uniform(5.0, 15.0), 2),
+                            "expected_yield_tons": round(random.uniform(10.0, 20.0), 2),
+                        }
                     )
 
         self.stdout.write(self.style.SUCCESS("✅ Seeder completed successfully with all data."))

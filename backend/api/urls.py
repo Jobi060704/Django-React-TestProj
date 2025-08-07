@@ -23,6 +23,13 @@ urlpatterns = [
     path("fields/<int:pk>/", views.CropFieldDetail.as_view(), name="field-detail"),
 
     # Crop Rotations
-    path('rotations/', views.CropRotationListCreate.as_view(), name='rotation-list'),
-    path('rotations/<int:pk>/', views.CropRotationDetail.as_view(), name='rotation-detail'),
+    path("rotations/", views.CropRotationListCreate.as_view(), name="rotation-list"),
+    path("rotations/<int:pk>/", views.CropRotationDetail.as_view(), name="rotation-detail"),
+
+    # Crop Rotation Entries
+    path("rotation-entries/", views.CropRotationEntryListCreate.as_view(), name="rotation-entry-list"),
+    path("rotation-entries/<int:pk>/", views.CropRotationEntryDetail.as_view(), name="rotation-entry-detail"),
+
+    # Crops
+    path("crops/", views.CropListCreate.as_view(), name="crop-list"),
 ]

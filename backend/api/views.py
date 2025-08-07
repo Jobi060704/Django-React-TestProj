@@ -1,6 +1,6 @@
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from .models import Company, Region, WaterwaySector, CropPivot
+from .models import *
 from .serializers import *
 from rest_framework_simplejwt.views import TokenObtainPairView
 
@@ -99,11 +99,48 @@ class CropRotationListCreate(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return CropRotation.objects.filter(pivot__sector__region__company__owner=self.request.user)
+        return CropRotation.objects.filter(
+            pivot__sector__region__company__owner=self.request.user
+        ) | CropRotation.objects.filter(
+            field__sector__region__company__owner=self.request.user
+        )
 
 class CropRotationDetail(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = CropRotationSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return CropRotation.objects.filter(pivot__sector__region__company__owner=self.request.user)
+        return CropRotation.objects.filter(
+            pivot__sector__region__company__owner=self.request.user
+        ) | CropRotation.objects.filter(
+            field__sector__region__company__owner=self.request.user
+        )
+
+
+class CropRotationEntryListCreate(generics.ListCreateAPIView):
+    serializer_class = CropRotationEntrySerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return CropRotationEntry.objects.filter(
+            rotation__pivot__sector__region__company__owner=self.request.user
+        ) | CropRotationEntry.objects.filter(
+            rotation__field__sector__region__company__owner=self.request.user
+        )
+
+class CropRotationEntryDetail(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = CropRotationEntrySerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return CropRotationEntry.objects.filter(
+            rotation__pivot__sector__region__company__owner=self.request.user
+        ) | CropRotationEntry.objects.filter(
+            rotation__field__sector__region__company__owner=self.request.user
+        )
+
+
+class CropListCreate(generics.ListCreateAPIView):
+    queryset = Crop.objects.all()
+    serializer_class = CropSerializer
+    permission_classes = [IsAuthenticated]
