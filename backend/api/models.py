@@ -2,20 +2,9 @@ from django.db import models
 from django.contrib.auth.models import User
 from math import pi
 
-# CROP_CHOICES = [
-#     ('none', 'None'),
-#     ('corn', 'Corn'),
-#     ('wheat', 'Wheat'),
-#     ('soybean', 'Soybean'),
-#     ('barley', 'Barley'),
-#     ('canola', 'Canola'),
-#     ('sunflower', 'Sunflower'),
-#     ('potato', 'Potato'),
-# ]
-
 class Crop(models.Model):
-    name = models.CharField(max_length=50, unique=True)
-    subtype = models.CharField(max_length=100, blank=True, null=True)
+    name = models.CharField(max_length=100)
+    subtype = models.CharField(max_length=100)
     best_season = models.CharField(
         max_length=20,
         choices=[
@@ -28,8 +17,11 @@ class Crop(models.Model):
         null=True
     )
 
+    class Meta:
+        unique_together = ('name', 'subtype')  # composite uniqueness
+
     def __str__(self):
-        return f"{self.name} ({self.subtype})" if self.subtype else self.name
+        return f"{self.name} ({self.subtype})"
 
 
 class Company(models.Model):

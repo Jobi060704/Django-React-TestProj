@@ -763,130 +763,112 @@ def random_color():
     """Generate a random HEX color like #AABBCC."""
     return "#{:06x}".format(random.randint(0, 0xFFFFFF))
 
+CROPS_WITH_SUBTYPES = {
+    "corn": ["sweetcorn", "popcorn"],
+    "wheat": ["durum", "hard red"],
+    "soybean": ["edamame", "tofu"],
+    "barley": ["hulled", "pearl"],
+    "canola": ["spring", "winter"],
+    "sunflower": ["oilseed", "non-oilseed"],
+    "potato": ["russet", "red"],
+}
 
 class Command(BaseCommand):
-    help = "Seed a user, company, region, sectors, pivots, and crop rotations with random colors."
+    help = "Seed the database with all data."
 
     def handle(self, *args, **kwargs):
         fake = Faker()
 
-        # Clear existing data
+        # Clear existing
+        CropRotationEntry.objects.all().delete()
         CropRotation.objects.all().delete()
         CropField.objects.all().delete()
         CropPivot.objects.all().delete()
         WaterwaySector.objects.all().delete()
         Region.objects.all().delete()
         Company.objects.all().delete()
+        Crop.objects.all().delete()
         User.objects.all().delete()
 
         # ----------------------------
-        # Create user
+        # Create User
         user = User.objects.create_user(username="vugar", password="123")
-        self.stdout.write(self.style.SUCCESS("User created."))
 
-        # Create company
+        # Create Crops
+        all_crops = []
+        for name, subtypes in CROPS_WITH_SUBTYPES.items():
+            for subtype in subtypes:
+                crop = Crop.objects.create(name=name, subtype=subtype, best_season=random.choice(["spring", "summer", "fall"]))
+                all_crops.append(crop)
+
+        # Create Company, Region
         company = Company.objects.create(
-            name="Karabakh Crops LLC",
-            owner=user,
-            center="SRID=4326;POINT(46.5 39.82)",
-            color=random_color()
+            name="Karabakh Crops LLC", owner=user,
+            center="SRID=4326;POINT(46.5 39.82)", color=random_color()
         )
-
-        # Create region
         region = Region.objects.create(
-            company=company,
-            name="Beylagan",
-            center="SRID=4326;POINT(47.5 39.82)",
-            color=random_color()
+            company=company, name="Beylagan",
+            center="SRID=4326;POINT(47.5 39.82)", color=random_color()
         )
 
-        # Create sectors with random colors
+        # Create Sectors
         sectors = []
-        for idx, (name, count) in enumerate(SECTOR_NAMES_SIZES):
+        for i, (name, count) in enumerate(SECTOR_NAMES_SIZES):
             sector = WaterwaySector.objects.create(
-                region=region,
-                name=name,
-                area_ha=count,
+                region=region, name=name, area_ha=count,
                 total_water_requirement=0,
-                shape=SECTOR_POLYGONS_WKT[idx],
+                shape=SECTOR_POLYGONS_WKT[i],
                 color=random_color()
             )
             sectors.append((sector, count))
 
-        # Pivots
-        crop_choices = [c[0] for c in CROP_CHOICES if c[0] != 'none']
-        data = json.loads(GEOJSON_DATA)
-        coords = [(f['geometry']['coordinates'][0], f['geometry']['coordinates'][1]) for f in data['features']]
-
+        # Create Pivots
         pivot_counter = 1
         coord_idx = 0
         all_pivots = []
+        data = json.loads(GEOJSON_DATA)
+        coords = [(f['geometry']['coordinates'][0], f['geometry']['coordinates'][1]) for f in data['features']]
 
         for sector, count in sectors:
             for _ in range(count):
                 if coord_idx >= len(coords) or coord_idx >= len(PIVOT_RADII):
                     break
-
                 lon, lat = coords[coord_idx]
                 radius = PIVOT_RADII[coord_idx]
                 coord_idx += 1
-
                 area_ha = round((pi * radius ** 2) / 10000, 2)
-
                 pivot = CropPivot.objects.create(
                     sector=sector,
                     logical_name=f"P{pivot_counter:02d}",
                     area=area_ha,
-                    crop_1=random.choice(crop_choices),
-                    crop_2=random.choice(crop_choices) if random.random() > 0.5 else None,
-                    crop_3=None,
-                    crop_4=None,
                     seeding_date=fake.date_between(start_date='-2y', end_date='today'),
                     harvest_date=fake.date_between(start_date='today', end_date='+6m'),
                     center=f"SRID=4326;POINT({lon} {lat})",
                     radius_m=radius,
-                    color=random_color()  # ✅ Random HEX color for pivot
+                    color=random_color()
                 )
                 all_pivots.append(pivot)
                 pivot_counter += 1
 
-        # ----------------------------
-        # Add CropRotation history for each pivot
-        # ----------------------------
+        # Crop Rotations for pivots
         for pivot in all_pivots:
-            for i in range(2):  # Two years of history
-                year = fake.year()
-                CropRotation.objects.create(
-                    pivot=pivot,
-                    pivot_name=pivot.logical_name,
-                    sector_name=pivot.sector.name,
-                    company_name=pivot.sector.region.company.name,
-                    year=int(year),
-                    crop=random.choice(crop_choices),
-                    seeding_date=fake.date_between(
-                        start_date=date(int(year), 2, 1),
-                        end_date=date(int(year), 4, 1)
-                    ),
-                    harvest_date = fake.date_between(
-                        start_date=date(int(year), 8, 1),
-                        end_date=date(int(year), 11, 1)
-                    ),
-                    yield_tons=round(random.uniform(5.0, 15.0), 2),
-                    notes=fake.sentence()
-                )
+            for _ in range(2):  # 2 years
+                year = random.randint(2021, 2023)
+                rotation = CropRotation.objects.create(pivot=pivot, field=None, year=year)
+                for _ in range(random.randint(0, 2)):
+                    crop = random.choice(all_crops)
+                    CropRotationEntry.objects.create(
+                        rotation=rotation,
+                        crop=crop,
+                        seeding_date=date(year, random.randint(2, 4), random.randint(1, 28)),
+                        harvest_date=date(year, random.randint(8, 10), random.randint(1, 28)),
+                        actual_yield_tons=round(random.uniform(5.0, 15.0), 2),
+                        expected_yield_tons=round(random.uniform(10.0, 20.0), 2),
+                    )
 
-        # ----------------------------
-        # Add Sector 6 with Fields only (no pivots)
-        # ----------------------------
+        # Sector 6 with Fields
         sector_6_shape = "SRID=4326;POLYGON((47.518513629751226 39.82674122118996, 47.52187957929533 39.82959053457296, 47.519469865417335 39.83100046037433, 47.515836169886114 39.82779871211255, 47.518513629751226 39.82674122118996))"
-        sector_6 = WaterwaySector.objects.create(
-            region=region,
-            name="Sector 6",
-            area_ha=0,
-            total_water_requirement=0,
-            shape=sector_6_shape,
-            color=random_color()
-        )
+        sector_6 = WaterwaySector.objects.create(region=region, name="Sector 6", area_ha=0, total_water_requirement=0, shape=sector_6_shape, color=random_color())
 
         sector_6_field_shapes = [
             polygon_to_wkt([
@@ -920,19 +902,28 @@ class Command(BaseCommand):
         ]
 
         for i, shape in enumerate(sector_6_field_shapes):
-            CropField.objects.create(
+            field = CropField.objects.create(
                 sector=sector_6,
                 logical_name=f"Field {i+1}",
                 shape=shape,
                 area=123,
                 seeding_date=fake.date_between(start_date='-2y', end_date='today'),
                 harvest_date=fake.date_between(start_date='today', end_date='+6m'),
-                crop_1=random.choice(crop_choices),
-                crop_2=random.choice(crop_choices),
-                crop_3=None,
-                crop_4=None,
                 color=random_color()
             )
 
+            for _ in range(2):  # Two years
+                year = random.randint(2021, 2023)
+                rotation = CropRotation.objects.create(pivot=None, field=field, year=year)
+                for _ in range(random.randint(0, 2)):
+                    crop = random.choice(all_crops)
+                    CropRotationEntry.objects.create(
+                        rotation=rotation,
+                        crop=crop,
+                        seeding_date=date(year, random.randint(2, 4), random.randint(1, 28)),
+                        harvest_date=date(year, random.randint(8, 10), random.randint(1, 28)),
+                        actual_yield_tons=round(random.uniform(5.0, 15.0), 2),
+                        expected_yield_tons=round(random.uniform(10.0, 20.0), 2),
+                    )
 
-        self.stdout.write(self.style.SUCCESS("Seeder completed successfully with CropRotation data."))
+        self.stdout.write(self.style.SUCCESS("✅ Seeder completed successfully with all data."))
