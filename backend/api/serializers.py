@@ -32,10 +32,11 @@ class UserSerializer(serializers.ModelSerializer):
 # Company Serializer
 class CompanySerializer(serializers.ModelSerializer):
     owner = serializers.ReadOnlyField(source='owner.username')
+    region_count = serializers.ReadOnlyField()
 
     class Meta:
         model = Company
-        fields = ["id", "name", "owner", "center", "color"]
+        fields = ["id", "name", "owner", "center", "color", "region_count"]
 
     def create(self, validated_data):
         validated_data["owner"] = self.context["request"].user
@@ -52,10 +53,11 @@ class RegionSerializer(serializers.ModelSerializer):
     company_id = serializers.PrimaryKeyRelatedField(
         queryset=Company.objects.all(), source='company'
     )
+    sector_count = serializers.ReadOnlyField()
 
     class Meta:
         model = Region
-        fields = ["id", "name", "center", "company", "company_id", "color"]
+        fields = ["id", "name", "center", "company", "company_id", "color", "sector_count"]
 
     def validate_company(self, company):
         if company.owner != self.context["request"].user:
@@ -68,16 +70,15 @@ class WaterwaySectorSerializer(serializers.ModelSerializer):
     region_id = serializers.PrimaryKeyRelatedField(
         queryset=Region.objects.all(), source='region'
     )
-    pivot_count = serializers.ReadOnlyField()
-    total_pivot_area = serializers.ReadOnlyField()
+    plantation_count = serializers.ReadOnlyField()
+    total_plantation_area = serializers.ReadOnlyField()
 
     class Meta:
         model = WaterwaySector
         fields = [
             "id", "name", "area_ha", "total_water_requirement", "shape",
-            "region", "region_id", "pivot_count", "total_pivot_area", "color"
+            "region", "region_id", "color", "plantation_count", "total_plantation_area"
         ]
-        read_only_fields = ["area_ha"]
 
     def validate_region(self, region):
         if region.company.owner != self.context["request"].user:

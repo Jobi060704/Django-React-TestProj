@@ -24,6 +24,10 @@ class Company(models.Model):
     def __str__(self):
         return self.name
 
+    @property
+    def region_count(self):
+        return self.regions.count()
+
 
 class Region(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='regions')
@@ -33,6 +37,10 @@ class Region(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.company.name})"
+
+    @property
+    def sector_count(self):
+        return self.sectors.count()
 
 
 class WaterwaySector(models.Model):
@@ -47,12 +55,12 @@ class WaterwaySector(models.Model):
         return f"{self.name} ({self.region.name})"
 
     @property
-    def total_pivot_area(self):
-        return sum(p.area for p in self.pivots.all())
+    def total_plantation_area(self):
+        return sum(p.area for p in self.pivots.all()) + sum(f.area for f in self.fields.all())
 
     @property
-    def pivot_count(self):
-        return self.pivots.count()
+    def plantation_count(self):
+        return self.pivots.count() + self.fields.count()
 
 
 class CropPivot(models.Model):
@@ -88,9 +96,9 @@ class CropField(models.Model):
 class CropRotation(models.Model):
     pivot = models.ForeignKey(CropPivot, null=True, blank=True, on_delete=models.SET_NULL, related_name="pivot_rotations")
     field = models.ForeignKey(CropField, null=True, blank=True, on_delete=models.SET_NULL, related_name="field_rotations")
-    sector = models.ForeignKey(WaterwaySector, on_delete=models.SET_NULL, null=True, related_name="crop_rotations")
-    region = models.ForeignKey(Region, on_delete=models.SET_NULL, null=True, related_name="crop_rotations")
-    company = models.ForeignKey(Company, on_delete=models.SET_NULL, null=True, related_name="crop_rotations")
+    sector = models.ForeignKey(WaterwaySector, on_delete=models.SET_NULL, null=True, related_name="sector_rotations")
+    region = models.ForeignKey(Region, on_delete=models.SET_NULL, null=True, related_name="region_rotations")
+    company = models.ForeignKey(Company, on_delete=models.SET_NULL, null=True, related_name="company_rotations")
     year = models.PositiveIntegerField()
     notes = models.TextField(blank=True, null=True)
 
