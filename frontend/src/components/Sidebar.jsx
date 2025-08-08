@@ -89,7 +89,7 @@ const Sidebar = () => {
                         </Link>
                     </li>
                     <li>
-                        <Link to="/croprotation">
+                        <Link to="/dashboard/crop-rotations">
                             <FaTable className="sidebar-icon" />
                             <span>Crop Rotation</span>
                         </Link>

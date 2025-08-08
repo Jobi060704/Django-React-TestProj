@@ -1,0 +1,60 @@
+.crop-rotation-page {
+    padding: 1rem;
+}
+
+.rotation-table-wrapper {
+    overflow-x: auto;
+}
+
+.rotation-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: sans-serif;
+    background: #fdfdfd;
+}
+
+.rotation-table th,
+.rotation-table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.shape-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.shape-circle {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 1px solid black;
+}
+
+.shape-polygon {
+    width: 25px;
+    height: 25px;
+}
+
+.rotation-cell {
+    display: inline-block;
+    padding: 6px 10px;
+    background: #e0f0ff;
+    border-radius: 4px;
+    color: #005a9e;
+    text-decoration: none;
+}
+
+.rotation-cell.add {
+    background: #f0f8e0;
+    color: #2a6e00;
+    font-weight: bold;
+}
+
+.plus-circle {
+    font-size: 1.2em;
+    vertical-align: middle;
+}

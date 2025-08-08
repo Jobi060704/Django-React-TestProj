@@ -21,6 +21,7 @@ import PivotEdit from "./pages/Models/Pivots/PivotEdit.jsx";
 import Fields from "./pages/Models/Fields/Fields.jsx";
 import FieldAdd from "./pages/Models/Fields/FieldAdd.jsx";
 import FieldEdit from "./pages/Models/Fields/FieldEdit.jsx";
+import CropRotations from "./pages/Models/CropRotations.jsx";
 
 function Logout() {
     localStorage.clear();
@@ -58,6 +59,9 @@ function App() {
                 <Route path="/dashboard/fields" element={<ProtectedRoute> <MainLayout> <Fields /> </MainLayout> </ProtectedRoute>} />
                 <Route path="/dashboard/fields/add" element={<ProtectedRoute> <MainLayout> <FieldAdd /> </MainLayout> </ProtectedRoute>} />
                 <Route path="/dashboard/fields/:id/edit" element={<ProtectedRoute> <MainLayout> <FieldEdit /> </MainLayout> </ProtectedRoute>} />
+
+                <Route path="/dashboard/crop-rotations" element={<ProtectedRoute> <MainLayout> <CropRotations /> </MainLayout> </ProtectedRoute>} />
+
 
 
                 <Route path="/login" element={<Login />} />
