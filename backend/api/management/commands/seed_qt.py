@@ -849,6 +849,7 @@ class Command(BaseCommand):
                     radius_m=radius,
                     color=random_color()
                 )
+                pivot.crops.set(random.sample(all_crops, random.randint(0, 2)))
                 all_pivots.append(pivot)
                 pivot_counter += 1
 
@@ -915,6 +916,7 @@ class Command(BaseCommand):
                 harvest_date=fake.date_between(start_date='today', end_date='+6m'),
                 color=random_color()
             )
+            field.crops.set(random.sample(all_crops, random.randint(0, 2)))
 
             for _ in range(2):  # Two years
                 year = random.randint(2021, 2023)
