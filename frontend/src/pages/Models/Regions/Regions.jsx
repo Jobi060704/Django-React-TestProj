@@ -249,6 +249,7 @@ function Regions() {
                                                                     </button>
                                                                 </div>
                                                             </div>
+                                                            <p>{region.sector_count} sectors</p>
                                                         </div>
                                                     ))}
                                                 </div>

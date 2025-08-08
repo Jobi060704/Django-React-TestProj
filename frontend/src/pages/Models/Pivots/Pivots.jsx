@@ -231,7 +231,7 @@ function Pivots() {
                                                                     </button>
                                                                 </div>
                                                             </div>
-                                                            <p>{pivot.crop_1}{pivot.crop_2 ? ", " + pivot.crop_2 : ""}</p>
+                                                            <p>{pivot.crops.length} crop types</p>
                                                             <p>{pivot.area?.toFixed(2)} ha</p>
                                                         </div>
                                                     ))}

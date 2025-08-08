@@ -252,6 +252,7 @@ function Companies() {
                                                                     </button>
                                                                 </div>
                                                             </div>
+                                                            <p>{company.region_count} regions</p>
                                                         </div>
                                                     ))}
                                                 </div>

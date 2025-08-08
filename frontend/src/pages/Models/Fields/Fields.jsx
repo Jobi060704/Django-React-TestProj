@@ -239,7 +239,7 @@ function Fields() {
                                                                     </button>
                                                                 </div>
                                                             </div>
-                                                            <p>{field.crop_1}{field.crop_2 && ", " + field.crop_2}</p>
+                                                            <p>{field.crops.length} crop types</p>
                                                             <p>{field.area?.toFixed(2)} ha</p>
                                                         </div>
                                                     ))}
