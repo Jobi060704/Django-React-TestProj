@@ -5,20 +5,11 @@ from math import pi
 class Crop(models.Model):
     name = models.CharField(max_length=100)
     subtype = models.CharField(max_length=100)
-    best_season = models.CharField(
-        max_length=20,
-        choices=[
-            ('spring', 'Spring'),
-            ('summer', 'Summer'),
-            ('fall', 'Fall'),
-            ('winter', 'Winter'),
-        ],
-        blank=True,
-        null=True
-    )
+    best_season = models.CharField(choices=[('spring', 'Spring'),('summer', 'Summer'),('fall', 'Fall'),('winter', 'Winter')],
+                                   blank=True, null=True, max_length=20)
 
     class Meta:
-        unique_together = ('name', 'subtype')  # composite uniqueness
+        unique_together = ('name', 'subtype')
 
     def __str__(self):
         return f"{self.name} ({self.subtype})"
@@ -26,9 +17,8 @@ class Crop(models.Model):
 
 class Company(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='owned_companies')
-    name = models.CharField(max_length=100, unique=True)  # Required (so remove null/blank)
-    center = models.CharField(max_length=1000, null=True, blank=True)  # WKT POINT
-
+    name = models.CharField(max_length=100, unique=True)
+    center = models.CharField(max_length=1000, null=True, blank=True)
     color = models.CharField(max_length=7, default="#0000FF")
 
     def __str__(self):
@@ -37,9 +27,8 @@ class Company(models.Model):
 
 class Region(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='regions')
-    name = models.CharField(max_length=100)  # Required
-    center = models.CharField(max_length=1000, null=True, blank=True)  # WKT POINT
-
+    name = models.CharField(max_length=100)
+    center = models.CharField(max_length=1000, null=True, blank=True)
     color = models.CharField(max_length=7, default="#0000FF")
 
     def __str__(self):
@@ -51,7 +40,7 @@ class WaterwaySector(models.Model):
     name = models.CharField(max_length=100)
     area_ha = models.FloatField(null=True, blank=True)
     total_water_requirement = models.FloatField(default=0)
-    shape = models.TextField(null=True, blank=True)  # WKT POLYGON
+    shape = models.TextField(null=True, blank=True)
     color = models.CharField(max_length=7, default="#0000FF")
 
     def __str__(self):
@@ -65,21 +54,15 @@ class WaterwaySector(models.Model):
     def pivot_count(self):
         return self.pivots.count()
 
-    def save(self, *args, **kwargs):
-        # Area should be calculated on the client and passed in
-        super().save(*args, **kwargs)
-
 
 class CropPivot(models.Model):
     sector = models.ForeignKey(WaterwaySector, on_delete=models.CASCADE, related_name='pivots')
     logical_name = models.CharField(max_length=10)
-    area = models.FloatField()  # Now must be calculated client-side and passed in
-
+    area = models.FloatField()
     crops = models.ManyToManyField(Crop, blank=True)
-
     seeding_date = models.DateField(null=True, blank=True)
     harvest_date = models.DateField(null=True, blank=True)
-    center = models.CharField(max_length=1000, null=True, blank=True)  # WKT POINT
+    center = models.CharField(max_length=1000, null=True, blank=True)
     radius_m = models.FloatField(default=100.0)
     color = models.CharField(max_length=7, default="#008000")
 
@@ -91,33 +74,23 @@ class CropField(models.Model):
     sector = models.ForeignKey(WaterwaySector, on_delete=models.CASCADE, related_name='fields')
     logical_name = models.CharField(max_length=10)
     area = models.FloatField()
-
     crops = models.ManyToManyField(Crop, blank=True)
-
     seeding_date = models.DateField(null=True, blank=True)
     harvest_date = models.DateField(null=True, blank=True)
-    shape = models.TextField(null=True, blank=True)  # WKT POLYGON
+    shape = models.TextField(null=True, blank=True)
     color = models.CharField(max_length=7, default="#000080")
-
-    def save(self, *args, **kwargs):
-        # Area should be calculated client-side
-        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.logical_name} – {self.sector.name}"
 
 
 
-
 class CropRotation(models.Model):
     pivot = models.ForeignKey(CropPivot, null=True, blank=True, on_delete=models.SET_NULL, related_name="pivot_rotations")
     field = models.ForeignKey(CropField, null=True, blank=True, on_delete=models.SET_NULL, related_name="field_rotations")
-
-    # New proper FK references
     sector = models.ForeignKey(WaterwaySector, on_delete=models.SET_NULL, null=True, related_name="crop_rotations")
     region = models.ForeignKey(Region, on_delete=models.SET_NULL, null=True, related_name="crop_rotations")
     company = models.ForeignKey(Company, on_delete=models.SET_NULL, null=True, related_name="crop_rotations")
-
     year = models.PositiveIntegerField()
     notes = models.TextField(blank=True, null=True)
 
@@ -126,7 +99,6 @@ class CropRotation(models.Model):
         unique_together = ('pivot', 'field', 'year')
 
     def save(self, *args, **kwargs):
-        # Auto-fill sector, region, company
         if self.pivot:
             self.sector = self.pivot.sector
             self.region = self.pivot.sector.region
@@ -144,15 +116,13 @@ class CropRotation(models.Model):
 class CropRotationEntry(models.Model):
     rotation = models.ForeignKey(CropRotation, on_delete=models.CASCADE, related_name="entries")
     crop = models.ForeignKey(Crop, on_delete=models.CASCADE)
-
     seeding_date = models.DateField(null=True, blank=True)
     harvest_date = models.DateField(null=True, blank=True)
-
     actual_yield_tons = models.FloatField(null=True, blank=True)
     expected_yield_tons = models.FloatField(null=True, blank=True)
 
     class Meta:
-        unique_together = ('rotation', 'crop')  # Optional, prevents same crop repeated
+        unique_together = ('rotation', 'crop')
 
     def __str__(self):
         return f"{self.crop.name} ({self.rotation.year})"
